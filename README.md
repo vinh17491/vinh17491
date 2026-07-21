@@ -1,13 +1,14 @@
 <div align="center">
 
-# Hi, I'm Zinzin 👋
+Hi, I'm Zinzin 👋
 
-### Software Engineering Student at HUFLIT
-### Backend-focused Full-stack Developer
+Software Engineering Student at HUFLIT
+
+Backend-focused Full-stack Developer
 
 <img
-  src="https://readme-typing-svg.demolab.com?font=JetBrains+Mono&weight=600&size=20&duration=3000&pause=900&color=58A6FF&center=true&vCenter=true&width=760&lines=Building+reliable+backend+systems;Designing+clear+and+maintainable+APIs;React+%7C+Next.js+%7C+ASP.NET+Core;Learning+through+practical+projects;Open+to+Software+Developer+Internships"
-  alt="Typing introduction"
+src="https://readme-typing-svg.demolab.com?font=JetBrains+Mono&weight=600&size=20&duration=3000&pause=900&color=58A6FF&center=true&vCenter=true&width=760&lines=Building+reliable+backend+systems;Designing+clear+and+maintainable+APIs;React+%7C+Next.js+%7C+ASP.NET+Core;Learning+through+practical+projects;Open+to+Software+Developer+Internships"
+alt="Typing introduction"
 />
 
 <br/>
@@ -27,49 +28,46 @@
 </a>
 
 <img
-  src="https://img.shields.io/badge/Status-Open_to_Internships-238636?style=for-the-badge"
-  alt="Open to internships"
+src="https://img.shields.io/badge/Status-Open_to_Internships-238636?style=for-the-badge"
+alt="Open to internships"
 />
 
 <br/><br/>
 
 <img
-  src="https://img.shields.io/badge/Backend-Enjoyer-512BD4?style=flat-square&logo=dotnet&logoColor=white"
-  alt="Backend enjoyer"
+src="https://img.shields.io/badge/Backend-Enjoyer-512BD4?style=flat-square&logo=dotnet&logoColor=white"
+alt="Backend enjoyer"
 />
 
 <img
-  src="https://img.shields.io/badge/Mode-Debugging-F7DF1E?style=flat-square"
-  alt="Debugging mode"
+src="https://img.shields.io/badge/Mode-Debugging-F7DF1E?style=flat-square"
+alt="Debugging mode"
 />
 
 <img
-  src="https://img.shields.io/badge/Works-On_My_Machine-2496ED?style=flat-square&logo=docker&logoColor=white"
-  alt="Works on my machine"
+src="https://img.shields.io/badge/Works-On_My_Machine-2496ED?style=flat-square&logo=docker&logoColor=white"
+alt="Works on my machine"
 />
 
 </div>
 
----
+🌙 About Me
 
-## 🌙 About Me
-
-I am a **Software Engineering student at HUFLIT University** with a strong interest in backend development, system design, and practical software architecture.
+I am a Software Engineering student at HUFLIT University with a strong interest in backend development, system design, and practical software architecture.
 
 I focus on building applications with clear business logic, maintainable code, reliable data flows, secure authentication, and APIs that are easy to test and extend.
 
-- Backend-focused, with full-stack development experience
-- Interested in clean architecture, security, and database design
-- Building practical projects for internship applications
+Backend-focused, with full-stack development experience
 
-> 💡 **Personal mindset:**  
-> *Stay curious, build with purpose, and improve one system at a time.*
+Interested in clean architecture, security, and database design
 
----
+Building practical projects for internship applications
 
-## 🛠️ Tech Stack & Tools
+💡 Personal mindset:Stay curious, build with purpose, and improve one system at a time.
 
-### ✨ Core Expertise
+🛠️ Tech Stack & Tools
+
+✨ Core Expertise
 
 <table>
   <thead>
@@ -91,7 +89,6 @@ I focus on building applications with clear business logic, maintainable code, r
         <img src="https://img.shields.io/badge/Dart-0175C2?style=flat-square&logo=dart&logoColor=white" alt="Dart" />
       </td>
     </tr>
-
     <tr>
       <td><strong>Frontend Development</strong></td>
       <td>
@@ -102,7 +99,6 @@ I focus on building applications with clear business logic, maintainable code, r
         <img src="https://img.shields.io/badge/CSS3-1572B6?style=flat-square&logo=css3&logoColor=white" alt="CSS3" />
       </td>
     </tr>
-
     <tr>
       <td><strong>Backend Frameworks</strong></td>
       <td>
@@ -112,7 +108,6 @@ I focus on building applications with clear business logic, maintainable code, r
         <img src="https://img.shields.io/badge/REST_API-005571?style=flat-square" alt="REST API" />
       </td>
     </tr>
-
     <tr>
       <td><strong>Mobile & Desktop</strong></td>
       <td>
@@ -122,7 +117,6 @@ I focus on building applications with clear business logic, maintainable code, r
         <img src="https://img.shields.io/badge/WinUI-0078D4?style=flat-square&logo=windows11&logoColor=white" alt="WinUI" />
       </td>
     </tr>
-
     <tr>
       <td><strong>ORM & Databases</strong></td>
       <td>
@@ -136,7 +130,6 @@ I focus on building applications with clear business logic, maintainable code, r
         <img src="https://img.shields.io/badge/Firestore-FFCA28?style=flat-square&logo=firebase&logoColor=black" alt="Firebase Firestore" />
       </td>
     </tr>
-
     <tr>
       <td><strong>Infrastructure & Security</strong></td>
       <td>
@@ -151,17 +144,17 @@ I focus on building applications with clear business logic, maintainable code, r
   </tbody>
 </table>
 
----
+🚀 Featured Projects
 
-## 🚀 Featured Projects
+✈️ Flight Booking System
 
-### ✈️ Flight Booking System
+Full-stack airline booking and travel-information platform built with React, ASP.NET Core, Entity Framework Core, and SQLite.
 
-Full-stack airline booking and travel-information platform built with **React, ASP.NET Core, Entity Framework Core, and SQLite**.
+Flight search, seat selection, booking, and payment workflows
 
-- Flight search, seat selection, booking, and payment workflows
-- Travel-information pages and responsive navigation
-- Reusable components, asset validation, and regression testing
+Travel-information pages and responsive navigation
+
+Reusable components, asset validation, and regression testing
 
 <p>
   <a href="https://github.com/Phucht59/web_maybay">
@@ -172,13 +165,15 @@ Full-stack airline booking and travel-information platform built with **React, A
   </a>
 </p>
 
-### 🏋️ GymFit
+🏋️ GymFit
 
-Gym management and commerce platform built with **React, TypeScript, Express.js, and SQL Server**.
+Gym management and commerce platform built with React, TypeScript, Express.js, and SQL Server.
 
-- Customer, coach, and administrator modules
-- Authentication, authorization, products, inventory, and payments
-- Responsive dashboards and protected API testing
+Customer, coach, and administrator modules
+
+Authentication, authorization, products, inventory, and payments
+
+Responsive dashboards and protected API testing
 
 <p>
   <a href="https://github.com/vinh17491/gym">
@@ -189,33 +184,19 @@ Gym management and commerce platform built with **React, TypeScript, Express.js,
   </a>
 </p>
 
----
-
-## 😂 Developer Mood
+😂 Developer Mood
 
 <p align="center">
   <a href="https://www.pinterest.com/pin/1148558711243521022/">
-    <img
-      src="https://raw.githubusercontent.com/vinh17491/vinh17491/main/assets/meme-1.jpg"
-      width="31%"
-      alt="Developer meme 1"
-    />
+    <img src="./assets/meme-1.jpg" width="31%" alt="Developer meme 1" />
   </a>
   &nbsp;
   <a href="https://www.pinterest.com/pin/916764067925770490/">
-    <img
-      src="https://raw.githubusercontent.com/vinh17491/vinh17491/main/assets/meme-2.jpg"
-      width="31%"
-      alt="Developer meme 2"
-    />
+    <img src="./assets/meme-2.jpg" width="31%" alt="Developer meme 2" />
   </a>
   &nbsp;
   <a href="https://www.pinterest.com/pin/1092263715890496061/">
-    <img
-      src="https://raw.githubusercontent.com/vinh17491/vinh17491/main/assets/meme-3.jpg"
-      width="31%"
-      alt="Developer meme 3"
-    />
+    <img src="./assets/meme-3.jpg" width="31%" alt="Developer meme 3" />
   </a>
 </p>
 
@@ -223,9 +204,7 @@ Gym management and commerce platform built with **React, TypeScript, Express.js,
   <em>Code. Debug. Learn. Repeat.</em>
 </p>
 
----
-
-## 📊 GitHub Activity
+📊 GitHub Activity
 
 <p align="center">
   <img
@@ -240,9 +219,7 @@ Gym management and commerce platform built with **React, TypeScript, Express.js,
   />
 </p>
 
----
-
-## 📫 Contact
+📫 Contact
 
 <p align="center">
   <a href="mailto:vinhvachocon@gmail.com">
