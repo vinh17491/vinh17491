@@ -186,19 +186,7 @@ Responsive dashboards and protected API testing
 
 😂 Developer Mood
 
-<p align="center">
-  <a href="https://www.pinterest.com/pin/1148558711243521022/">
-    <img src="./assets/meme-1.jpg" width="31%" alt="Developer meme 1" />
-  </a>
-  &nbsp;
-  <a href="https://www.pinterest.com/pin/916764067925770490/">
-    <img src="./assets/meme-2.jpg" width="31%" alt="Developer meme 2" />
-  </a>
-  &nbsp;
-  <a href="https://www.pinterest.com/pin/1092263715890496061/">
-    <img src="./assets/meme-3.jpg" width="31%" alt="Developer meme 3" />
-  </a>
-</p>
+
 
 <p align="center">
   <em>Code. Debug. Learn. Repeat.</em>
