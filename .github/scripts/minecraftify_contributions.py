@@ -13,10 +13,15 @@ FOODS = (
     ("sheep", "grass", "#65A30D"),
 )
 
+FARM_X = 8.0
+FARM_Y = 58.0
+STEVEN_IDLE_X = 278.0
+STEVEN_IDLE_Y = 95.0
+
 TARGETS = {
-    "pig": (646.0, 94.0),
-    "cow": (720.0, 94.0),
-    "sheep": (796.0, 94.0),
+    "pig": (44.0, 94.0),
+    "cow": (118.0, 94.0),
+    "sheep": (194.0, 94.0),
 }
 
 
@@ -157,29 +162,29 @@ def fence_segment(x: int, y: int, w: int) -> str:
 def farm_markup(bg: str, text: str) -> str:
     return (
         '<g id="voxel-farm" aria-hidden="true">'
-        f'<rect x="610" y="58" width="252" height="93" rx="5" fill="{bg}" opacity=".96" '
+        f'<rect x="{fmt(FARM_X)}" y="{fmt(FARM_Y)}" width="252" height="93" rx="5" fill="{bg}" opacity=".96" '
         'stroke="#65A30D" stroke-width="1.5"/>'
-        '<rect x="616" y="132" width="240" height="12" fill="#65A30D"/>'
-        '<rect x="616" y="141" width="240" height="7" fill="#795548"/>'
-        + fence_segment(618, 82, 72)
-        + fence_segment(696, 82, 72)
-        + fence_segment(774, 82, 72)
-        + '<rect x="618" y="128" width="228" height="4" fill="#92400E"/>'
-        + '<g transform="translate(631,96)">' + pig_markup() + '</g>'
-        + '<g transform="translate(705,96)">' + cow_markup() + '</g>'
-        + '<g transform="translate(782,96)">' + sheep_markup() + '</g>'
-        + '<rect x="634" y="124" width="34" height="7" fill="#78350F"/>'
-        + '<rect x="708" y="124" width="34" height="7" fill="#78350F"/>'
-        + '<rect x="786" y="124" width="34" height="7" fill="#78350F"/>'
-        + f'<text x="652" y="76" text-anchor="middle" font-family="monospace" font-size="10" '
+        + f'<rect x="{fmt(FARM_X + 6)}" y="132" width="240" height="12" fill="#65A30D"/>'
+        + f'<rect x="{fmt(FARM_X + 6)}" y="141" width="240" height="7" fill="#795548"/>'
+        + fence_segment(int(FARM_X + 8), 82, 72)
+        + fence_segment(int(FARM_X + 86), 82, 72)
+        + fence_segment(int(FARM_X + 164), 82, 72)
+        + f'<rect x="{fmt(FARM_X + 8)}" y="128" width="228" height="4" fill="#92400E"/>'
+        + f'<g transform="translate({fmt(FARM_X + 21)},96)">' + pig_markup() + '</g>'
+        + f'<g transform="translate({fmt(FARM_X + 95)},96)">' + cow_markup() + '</g>'
+        + f'<g transform="translate({fmt(FARM_X + 172)},96)">' + sheep_markup() + '</g>'
+        + f'<rect x="{fmt(FARM_X + 24)}" y="124" width="34" height="7" fill="#78350F"/>'
+        + f'<rect x="{fmt(FARM_X + 98)}" y="124" width="34" height="7" fill="#78350F"/>'
+        + f'<rect x="{fmt(FARM_X + 176)}" y="124" width="34" height="7" fill="#78350F"/>'
+        + f'<text x="{fmt(FARM_X + 42)}" y="76" text-anchor="middle" font-family="monospace" font-size="10" '
           f'font-weight="900" fill="{text}">PIG</text>'
-        + f'<text x="730" y="76" text-anchor="middle" font-family="monospace" font-size="10" '
+        + f'<text x="{fmt(FARM_X + 120)}" y="76" text-anchor="middle" font-family="monospace" font-size="10" '
           f'font-weight="900" fill="{text}">COW</text>'
-        + f'<text x="808" y="76" text-anchor="middle" font-family="monospace" font-size="10" '
+        + f'<text x="{fmt(FARM_X + 198)}" y="76" text-anchor="middle" font-family="monospace" font-size="10" '
           f'font-weight="900" fill="{text}">SHEEP</text>'
-        + '<g class="pig-heart"><text x="652" y="91" text-anchor="middle" font-size="16" fill="#FB7185">♥</text></g>'
-        + '<g class="cow-heart"><text x="730" y="91" text-anchor="middle" font-size="16" fill="#FB7185">♥</text></g>'
-        + '<g class="sheep-heart"><text x="808" y="91" text-anchor="middle" font-size="16" fill="#FB7185">♥</text></g>'
+        + f'<g class="pig-heart"><text x="{fmt(FARM_X + 42)}" y="91" text-anchor="middle" font-size="16" fill="#FB7185">♥</text></g>'
+        + f'<g class="cow-heart"><text x="{fmt(FARM_X + 120)}" y="91" text-anchor="middle" font-size="16" fill="#FB7185">♥</text></g>'
+        + f'<g class="sheep-heart"><text x="{fmt(FARM_X + 198)}" y="91" text-anchor="middle" font-size="16" fill="#FB7185">♥</text></g>'
         + '</g>'
     )
 
@@ -190,7 +195,10 @@ def route_and_times(
     start = 2.0
     end = 86.0
     span = (end - start) / len(blocks)
-    points: list[tuple[float, float, float]] = [(0.0, 592.0, 95.0), (start, 592.0, 95.0)]
+    points: list[tuple[float, float, float]] = [
+        (0.0, STEVEN_IDLE_X, STEVEN_IDLE_Y),
+        (start, STEVEN_IDLE_X, STEVEN_IDLE_Y),
+    ]
     pickup_times: list[float] = []
     feed_times: list[float] = []
     assignments: list[tuple[str, str, str]] = []
@@ -217,7 +225,11 @@ def route_and_times(
         feed_times.append(feed)
         assignments.append((animal, food, color))
 
-    points.extend([(90.0, 592.0, 95.0), (99.5, 592.0, 95.0), (100.0, 592.0, 95.0)])
+    points.extend([
+        (90.0, STEVEN_IDLE_X, STEVEN_IDLE_Y),
+        (99.5, STEVEN_IDLE_X, STEVEN_IDLE_Y),
+        (100.0, STEVEN_IDLE_X, STEVEN_IDLE_Y),
+    ])
 
     compact: dict[float, tuple[float, float]] = {}
     for p, x, y in points:
@@ -390,18 +402,18 @@ def minecraftify(path: Path) -> None:
         + farm_markup(panel_bg, panel_text)
         + '<g class="steven-route">' + steven_markup() + '</g>'
         + '<g id="farm-hud" aria-hidden="true">'
-        + f'<rect x="18" y="137" width="570" height="17" rx="2" fill="{hud_bg}" stroke="#57534E" stroke-width="1.5"/>'
-        + '<rect class="xp-fill" x="23" y="142" width="126" height="7" fill="#84CC16"/>'
-        + f'<text x="155" y="149" font-family="monospace" font-size="10" font-weight="800" fill="{hud_text}">XP</text>'
-        + f'<text class="scene-status" x="192" y="149" font-family="monospace" font-size="10" font-weight="800" fill="{hud_text}">'
+        + f'<rect x="280" y="164" width="568" height="17" rx="2" fill="{hud_bg}" stroke="#57534E" stroke-width="1.5"/>'
+        + '<rect class="xp-fill" x="285" y="169" width="126" height="7" fill="#84CC16"/>'
+        + f'<text x="417" y="176" font-family="monospace" font-size="10" font-weight="800" fill="{hud_text}">XP</text>'
+        + f'<text class="scene-status" x="454" y="176" font-family="monospace" font-size="10" font-weight="800" fill="{hud_text}">'
           'CARROT → PIG   |   HAY → COW   |   GRASS → SHEEP</text>'
         + '</g>'
         + '<g class="all-hearts">'
-          '<text x="690" y="54" font-size="15" fill="#FB7185">♥</text>'
-          '<text x="732" y="48" font-size="18" fill="#F472B6">♥</text>'
-          '<text x="775" y="54" font-size="15" fill="#FB7185">♥</text>'
+          '<text x="88" y="54" font-size="15" fill="#FB7185">♥</text>'
+          '<text x="130" y="48" font-size="18" fill="#F472B6">♥</text>'
+          '<text x="173" y="54" font-size="15" fill="#FB7185">♥</text>'
         + '</g>'
-        + '<text class="farm-complete" x="736" y="45" text-anchor="middle" font-size="13" fill="#A3E635">'
+        + '<text class="farm-complete" x="134" y="45" text-anchor="middle" font-size="13" fill="#A3E635">'
           'ANIMALS FED +XP</text>'
         + '</g>'
     )
