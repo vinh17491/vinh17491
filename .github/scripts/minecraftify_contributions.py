@@ -98,6 +98,7 @@ def steven_markup() -> str:
 def pig_markup() -> str:
     return (
         '<g class="animal pig-animal">'
+        '<g class="pig-idle">'
         '<rect x="0" y="8" width="31" height="18" fill="#F9A8D4"/>'
         '<rect x="22" y="3" width="18" height="18" fill="#F9A8D4"/>'
         '<rect x="25" y="11" width="15" height="8" fill="#F472B6"/>'
@@ -110,12 +111,14 @@ def pig_markup() -> str:
         '<rect x="4" y="25" width="5" height="8" fill="#F472B6"/>'
         '<rect x="22" y="25" width="5" height="8" fill="#F472B6"/>'
         '</g>'
+        '</g>'
     )
 
 
 def cow_markup() -> str:
     return (
         '<g class="animal cow-animal">'
+        '<g class="cow-idle">'
         '<rect x="0" y="8" width="32" height="19" fill="#F5F5F4"/>'
         '<rect x="4" y="10" width="9" height="8" fill="#78350F"/>'
         '<rect x="20" y="17" width="9" height="8" fill="#78350F"/>'
@@ -127,12 +130,14 @@ def cow_markup() -> str:
         '<rect x="4" y="26" width="5" height="8" fill="#78350F"/>'
         '<rect x="24" y="26" width="5" height="8" fill="#78350F"/>'
         '</g>'
+        '</g>'
     )
 
 
 def sheep_markup() -> str:
     return (
         '<g class="animal sheep-animal">'
+        '<g class="sheep-idle">'
         '<rect x="0" y="7" width="33" height="20" rx="4" fill="#F8FAFC"/>'
         '<rect x="4" y="4" width="8" height="8" rx="3" fill="#FFFFFF"/>'
         '<rect x="12" y="3" width="9" height="9" rx="3" fill="#FFFFFF"/>'
@@ -143,6 +148,7 @@ def sheep_markup() -> str:
         '<rect x="28" y="18" width="8" height="3" fill="#A8A29E"/>'
         '<rect x="5" y="26" width="5" height="8" fill="#57534E"/>'
         '<rect x="24" y="26" width="5" height="8" fill="#57534E"/>'
+        '</g>'
         '</g>'
     )
 
@@ -357,6 +363,12 @@ def minecraftify(path: Path) -> None:
         reaction_keyframes("pigReact", feed_times, assignments, "pig"),
         reaction_keyframes("cowReact", feed_times, assignments, "cow"),
         reaction_keyframes("sheepReact", feed_times, assignments, "sheep"),
+        ".pig-idle{animation:pigWander 5600ms steps(7,end) infinite;animation-delay:-900ms}",
+        "@keyframes pigWander{0%,100%{transform:translate(0,0)}14%{transform:translate(6px,0)}28%{transform:translate(9px,-1px)}43%{transform:translate(4px,0)}57%{transform:translate(-4px,0)}72%{transform:translate(-8px,-1px)}86%{transform:translate(-3px,0)}}",
+        ".cow-idle{animation:cowWander 7600ms steps(8,end) infinite;animation-delay:-2500ms}",
+        "@keyframes cowWander{0%,100%{transform:translate(0,0)}13%{transform:translate(-3px,0)}25%{transform:translate(-6px,0)}38%{transform:translate(-6px,-1px)}50%{transform:translate(-1px,0)}63%{transform:translate(4px,0)}76%{transform:translate(6px,-1px)}88%{transform:translate(3px,0)}}",
+        ".sheep-idle{animation:sheepWander 4800ms steps(7,end) infinite;animation-delay:-1700ms}",
+        "@keyframes sheepWander{0%,100%{transform:translate(0,0)}15%{transform:translate(5px,-2px)}30%{transform:translate(8px,0)}45%{transform:translate(3px,-2px)}60%{transform:translate(-4px,0)}75%{transform:translate(-7px,-2px)}90%{transform:translate(-2px,0)}}",
         f".pig-heart{{opacity:0;animation:pigHeart {LOOP_MS}ms steps(5,end) infinite}}",
         f".cow-heart{{opacity:0;animation:cowHeart {LOOP_MS}ms steps(5,end) infinite}}",
         f".sheep-heart{{opacity:0;animation:sheepHeart {LOOP_MS}ms steps(5,end) infinite}}",
