@@ -1,237 +1,111 @@
 <div align="center">
 
-Hi, I'm Zinzin 👋
-
-Software Engineering Student at HUFLIT
-
-Backend-focused Full-stack Developer
+<img width="100%" src="https://capsule-render.vercel.app/api?type=venom&height=230&color=0:020617,45:1e1b4b,100:701a75&text=ZINZIN&fontColor=E6F7FF&fontSize=70&fontAlignY=42&animation=twinkling&stroke=67E8F9&strokeWidth=1&desc=Software%20Engineering%20Student%20%40%20HUFLIT%20%E2%80%A2%20Backend-focused%20Full-stack%20Developer&descAlignY=62&descSize=18" alt="Zinzin animated header" />
 
 <img
-src="https://readme-typing-svg.demolab.com?font=JetBrains+Mono&weight=600&size=20&duration=3000&pause=900&color=58A6FF&center=true&vCenter=true&width=760&lines=Building+reliable+backend+systems;Designing+clear+and+maintainable+APIs;React+%7C+Next.js+%7C+ASP.NET+Core;Learning+through+practical+projects;Open+to+Software+Developer+Internships"
-alt="Typing introduction"
+  src="https://readme-typing-svg.demolab.com?font=JetBrains+Mono&weight=600&size=20&duration=2800&pause=900&color=67E8F9&center=true&vCenter=true&width=760&lines=Building+reliable+backend+systems;Designing+maintainable+APIs;React+%7C+Next.js+%7C+ASP.NET+Core;Building+secure+data-driven+applications;Debugging+systems%2C+not+just+code;Open+to+Software+Developer+Internships"
+  alt="Typing introduction"
 />
 
 <br/>
 
 <a href="mailto:vinhvachocon@gmail.com">
-  <img
-    src="https://img.shields.io/badge/Email-Contact_Me-EA4335?style=for-the-badge&logo=gmail&logoColor=white"
-    alt="Email"
-  />
+  <img src="https://img.shields.io/badge/Email-Contact-111827?style=for-the-badge&logo=gmail&logoColor=EA4335" alt="Email" />
 </a>
-
 <a href="https://github.com/vinh17491">
-  <img
-    src="https://img.shields.io/badge/GitHub-vinh17491-181717?style=for-the-badge&logo=github&logoColor=white"
-    alt="GitHub"
-  />
+  <img src="https://img.shields.io/badge/GitHub-vinh17491-111827?style=for-the-badge&logo=github&logoColor=white" alt="GitHub" />
 </a>
-
-<img
-src="https://img.shields.io/badge/Status-Open_to_Internships-238636?style=for-the-badge"
-alt="Open to internships"
-/>
-
-<br/><br/>
-
-<img
-src="https://img.shields.io/badge/Backend-Enjoyer-512BD4?style=flat-square&logo=dotnet&logoColor=white"
-alt="Backend enjoyer"
-/>
-
-<img
-src="https://img.shields.io/badge/Mode-Debugging-F7DF1E?style=flat-square"
-alt="Debugging mode"
-/>
-
-<img
-src="https://img.shields.io/badge/Works-On_My_Machine-2496ED?style=flat-square&logo=docker&logoColor=white"
-alt="Works on my machine"
-/>
+<img src="https://img.shields.io/badge/Open_to-Software_Developer_Internships-111827?style=for-the-badge&logo=codeforces&logoColor=67E8F9" alt="Open to internships" />
 
 </div>
 
-🌙 About Me
+## 🌙 About Me
 
-I am a Software Engineering student at HUFLIT University with a strong interest in backend development, system design, and practical software architecture.
+Software Engineering student at **HUFLIT** focused on backend and full-stack development.
 
-I focus on building applications with clear business logic, maintainable code, reliable data flows, secure authentication, and APIs that are easy to test and extend.
+I build applications around clear business logic, maintainable APIs, authentication and authorization, reliable data flows, database design, debugging, and practical software testing. I am especially interested in **ASP.NET Core**, **Node.js**, system architecture, and integrating AI into useful software products.
 
-Backend-focused, with full-stack development experience
+- Backend-focused with full-stack implementation experience.
+- Comfortable working across API, database, authentication, frontend integration, testing, and debugging.
+- Building practical projects for Software Developer / Software Engineer internship applications.
 
-Interested in clean architecture, security, and database design
+## ⚡ Tech Stack
 
-Building practical projects for internship applications
+<div align="center">
 
-💡 Personal mindset:Stay curious, build with purpose, and improve one system at a time.
+**Languages**
 
-🛠️ Tech Stack & Tools
+<img src="https://skillicons.dev/icons?i=cs,ts,js,java,kotlin,swift,dart&theme=dark" alt="Languages" />
 
-✨ Core Expertise
+**Frontend**
 
-<table>
-  <thead>
-    <tr>
-      <th align="left" width="210">Category</th>
-      <th align="left">Technologies</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><strong>Languages & Runtimes</strong></td>
-      <td>
-        <img src="https://img.shields.io/badge/C%23-239120?style=flat-square&logo=csharp&logoColor=white" alt="C#" />
-        <img src="https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" />
-        <img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=flat-square&logo=javascript&logoColor=black" alt="JavaScript" />
-        <img src="https://img.shields.io/badge/Java-ED8B00?style=flat-square&logo=openjdk&logoColor=white" alt="Java" />
-        <img src="https://img.shields.io/badge/Kotlin-7F52FF?style=flat-square&logo=kotlin&logoColor=white" alt="Kotlin" />
-        <img src="https://img.shields.io/badge/Swift-F05138?style=flat-square&logo=swift&logoColor=white" alt="Swift" />
-        <img src="https://img.shields.io/badge/Dart-0175C2?style=flat-square&logo=dart&logoColor=white" alt="Dart" />
-      </td>
-    </tr>
-    <tr>
-      <td><strong>Frontend Development</strong></td>
-      <td>
-        <img src="https://img.shields.io/badge/React-20232A?style=flat-square&logo=react&logoColor=61DAFB" alt="React" />
-        <img src="https://img.shields.io/badge/Next.js-000000?style=flat-square&logo=nextdotjs&logoColor=white" alt="Next.js" />
-        <img src="https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white" alt="Tailwind CSS" />
-        <img src="https://img.shields.io/badge/HTML5-E34F26?style=flat-square&logo=html5&logoColor=white" alt="HTML5" />
-        <img src="https://img.shields.io/badge/CSS3-1572B6?style=flat-square&logo=css3&logoColor=white" alt="CSS3" />
-      </td>
-    </tr>
-    <tr>
-      <td><strong>Backend Frameworks</strong></td>
-      <td>
-        <img src="https://img.shields.io/badge/ASP.NET_Core-512BD4?style=flat-square&logo=dotnet&logoColor=white" alt="ASP.NET Core" />
-        <img src="https://img.shields.io/badge/Node.js-339933?style=flat-square&logo=nodedotjs&logoColor=white" alt="Node.js" />
-        <img src="https://img.shields.io/badge/Express.js-000000?style=flat-square&logo=express&logoColor=white" alt="Express.js" />
-        <img src="https://img.shields.io/badge/REST_API-005571?style=flat-square" alt="REST API" />
-      </td>
-    </tr>
-    <tr>
-      <td><strong>Mobile & Desktop</strong></td>
-      <td>
-        <img src="https://img.shields.io/badge/Android-3DDC84?style=flat-square&logo=android&logoColor=white" alt="Android" />
-        <img src="https://img.shields.io/badge/iOS-000000?style=flat-square&logo=apple&logoColor=white" alt="iOS" />
-        <img src="https://img.shields.io/badge/Flutter-02569B?style=flat-square&logo=flutter&logoColor=white" alt="Flutter" />
-        <img src="https://img.shields.io/badge/WinUI-0078D4?style=flat-square&logo=windows11&logoColor=white" alt="WinUI" />
-      </td>
-    </tr>
-    <tr>
-      <td><strong>ORM & Databases</strong></td>
-      <td>
-        <img src="https://img.shields.io/badge/EF_Core-512BD4?style=flat-square&logo=dotnet&logoColor=white" alt="Entity Framework Core" />
-        <img src="https://img.shields.io/badge/PostgreSQL-4169E1?style=flat-square&logo=postgresql&logoColor=white" alt="PostgreSQL" />
-        <img src="https://img.shields.io/badge/MySQL-4479A1?style=flat-square&logo=mysql&logoColor=white" alt="MySQL" />
-        <img src="https://img.shields.io/badge/SQL_Server-CC2927?style=flat-square&logo=microsoftsqlserver&logoColor=white" alt="SQL Server" />
-        <img src="https://img.shields.io/badge/Oracle-F80000?style=flat-square&logo=oracle&logoColor=white" alt="Oracle Database" />
-        <img src="https://img.shields.io/badge/SQLite-003B57?style=flat-square&logo=sqlite&logoColor=white" alt="SQLite" />
-        <img src="https://img.shields.io/badge/MongoDB-47A248?style=flat-square&logo=mongodb&logoColor=white" alt="MongoDB" />
-        <img src="https://img.shields.io/badge/Firestore-FFCA28?style=flat-square&logo=firebase&logoColor=black" alt="Firebase Firestore" />
-      </td>
-    </tr>
-    <tr>
-      <td><strong>Infrastructure & Security</strong></td>
-      <td>
-        <img src="https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white" alt="Docker" />
-        <img src="https://img.shields.io/badge/SignalR-512BD4?style=flat-square&logo=dotnet&logoColor=white" alt="SignalR" />
-        <img src="https://img.shields.io/badge/JWT-000000?style=flat-square&logo=jsonwebtokens&logoColor=white" alt="JWT" />
-        <img src="https://img.shields.io/badge/Git-F05032?style=flat-square&logo=git&logoColor=white" alt="Git" />
-        <img src="https://img.shields.io/badge/GitHub-181717?style=flat-square&logo=github&logoColor=white" alt="GitHub" />
-        <img src="https://img.shields.io/badge/Postman-FF6C37?style=flat-square&logo=postman&logoColor=white" alt="Postman" />
-      </td>
-    </tr>
-  </tbody>
-</table>
+<img src="https://skillicons.dev/icons?i=react,nextjs,tailwind,html,css&theme=dark" alt="Frontend technologies" />
 
-🚀 Featured Projects
+**Backend & Data**
 
-✈️ Flight Booking System
+<img src="https://skillicons.dev/icons?i=dotnet,nodejs,express,postgres,mysql,sqlite,mongodb,firebase&theme=dark" alt="Backend and databases" />
 
-Full-stack airline booking and travel-information platform built with React, ASP.NET Core, Entity Framework Core, and SQLite.
+**Engineering Tools**
 
-Flight search, seat selection, booking, and payment workflows
+<img src="https://skillicons.dev/icons?i=docker,git,github,postman&theme=dark" alt="Engineering tools" />
 
-Travel-information pages and responsive navigation
-
-Reusable components, asset validation, and regression testing
-
-<p>
-  <a href="https://github.com/Phucht59/web_maybay">
-    <img
-      src="https://img.shields.io/badge/View_Flight_Booking_System-1F6FEB?style=for-the-badge&logo=github&logoColor=white"
-      alt="View Flight Booking System"
-    />
-  </a>
-</p>
-
-🏋️ GymFit
-
-Gym management and commerce platform built with React, TypeScript, Express.js, and SQL Server.
-
-Customer, coach, and administrator modules
-
-Authentication, authorization, products, inventory, and payments
-
-Responsive dashboards and protected API testing
-
-<p>
-  <a href="https://github.com/vinh17491/gym">
-    <img
-      src="https://img.shields.io/badge/View_GymFit-1F6FEB?style=for-the-badge&logo=github&logoColor=white"
-      alt="View GymFit"
-    />
-  </a>
-</p>
-
-😂 Developer Mood
-
-
+</div>
 
 <p align="center">
-  <em>Code. Debug. Learn. Repeat.</em>
+  <code>ASP.NET Core</code> • <code>Entity Framework Core</code> • <code>REST APIs</code> • <code>SQL Server</code> • <code>Oracle</code> • <code>JWT</code> • <code>SignalR</code> • <code>WinUI</code>
 </p>
 
-📊 GitHub Activity
+## 🚀 Featured Projects
 
-<p align="center">
-  <img
-    height="165"
-    src="https://github-readme-stats.vercel.app/api?username=vinh17491&show_icons=true&include_all_commits=true&theme=github_dark&hide_border=true"
-    alt="GitHub statistics"
-  />
-  <img
-    height="165"
-    src="https://github-readme-stats.vercel.app/api/top-langs/?username=vinh17491&layout=compact&langs_count=8&theme=github_dark&hide_border=true&exclude_repo=GymFit,Web-GYM-main"
-    alt="Top languages"
-  />
-</p>
+### ✈️ Flight Booking System
 
-📫 Contact
+Full-stack airline booking platform combining a **React + Vite** frontend with an **ASP.NET Core 8** API, **Entity Framework Core**, **SQLite**, and **JWT authentication**.
 
-<p align="center">
-  <a href="mailto:vinhvachocon@gmail.com">
-    <img
-      src="https://img.shields.io/badge/Email-vinhvachocon%40gmail.com-EA4335?style=for-the-badge&logo=gmail&logoColor=white"
-      alt="Email"
-    />
-  </a>
+- Flight search, seat selection, booking and payment workflows.
+- REST API with Swagger/OpenAPI support and authenticated endpoints.
+- Travel-information UI, reusable components, responsive navigation, and asset validation.
 
-  <a href="tel:+84936059747">
-    <img
-      src="https://img.shields.io/badge/Phone-0936_059_747-238636?style=for-the-badge&logo=whatsapp&logoColor=white"
-      alt="Phone"
-    />
-  </a>
+<a href="https://github.com/Phucht59/web_maybay">
+  <img src="https://img.shields.io/badge/View_Project-Flight_Booking_System-2563EB?style=for-the-badge&logo=github&logoColor=white" alt="Flight Booking System" />
+</a>
 
-  <a href="https://github.com/vinh17491">
-    <img
-      src="https://img.shields.io/badge/GitHub-Follow_My_Work-181717?style=for-the-badge&logo=github&logoColor=white"
-      alt="GitHub"
-    />
-  </a>
-</p>
+### 🏋️ GymFit
 
-<p align="center">
-  <strong>Open to Software Developer Internship opportunities.</strong>
-</p>
+Full-stack gym management and commerce platform built with **React 18**, **TypeScript**, **Express**, and **SQL Server**.
+
+- Role-based member, coach, and administrator workflows.
+- JWT authentication, authorization, catalog, inventory, cart, checkout, orders, payments, and audit histories.
+- Protected APIs, database migrations, responsive dashboards, and structured technical documentation.
+
+<a href="https://github.com/vinh17491/gym">
+  <img src="https://img.shields.io/badge/View_Project-GymFit-7C3AED?style=for-the-badge&logo=github&logoColor=white" alt="GymFit" />
+</a>
+
+## 🐍 Contribution Flow
+
+<div align="center">
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/vinh17491/vinh17491/output/github-contribution-grid-snake-dark.svg" />
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/vinh17491/vinh17491/output/github-contribution-grid-snake.svg" />
+  <img alt="Animated contribution snake" src="https://raw.githubusercontent.com/vinh17491/vinh17491/output/github-contribution-grid-snake.svg" />
+</picture>
+
+</div>
+
+## 📊 GitHub Activity
+
+<div align="center">
+
+<img height="165" src="https://github-readme-stats.vercel.app/api?username=vinh17491&show_icons=true&include_all_commits=true&theme=transparent&hide_border=true&title_color=67E8F9&text_color=C9D1D9&icon_color=A78BFA" alt="GitHub statistics" />
+<img height="165" src="https://github-readme-stats.vercel.app/api/top-langs/?username=vinh17491&layout=compact&langs_count=8&theme=transparent&hide_border=true&title_color=67E8F9&text_color=C9D1D9" alt="Top languages" />
+
+</div>
+
+<div align="center">
+
+<img width="100%" src="https://capsule-render.vercel.app/api?type=waving&height=130&section=footer&color=0:020617,45:312e81,100:701a75&animation=twinkling" alt="Animated footer" />
+
+<sub><strong>CODE • DEBUG • BUILD • IMPROVE</strong></sub>
+
+</div>
