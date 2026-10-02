@@ -1,6 +1,6 @@
 <div align="center">
 
-<img width="100%" src="https://capsule-render.vercel.app/api?type=venom&height=230&color=0:020617,45:1e1b4b,100:701a75&text=ZINZIN&fontColor=E6F7FF&fontSize=70&fontAlignY=42&animation=twinkling&stroke=67E8F9&strokeWidth=1&desc=Software%20Engineering%20Student%20%40%20HUFLIT%20%E2%80%A2%20Backend-focused%20Full-stack%20Developer&descAlignY=62&descSize=18" alt="Zinzin animated header" />
+<img width="100%" src="https://capsule-render.vercel.app/api?type=venom&height=230&color=0:020617,45:1e1b4b,100:701a75&text=ZINZIN&fontColor=E6F7FF&fontSize=70&fontAlignY=42&animation=twinkling&stroke=67E8F9&strokeWidth=1&desc=Software%20Engineering%20%E2%80%A2%20Backend-focused%20Full-stack%20Developer&descAlignY=62&descSize=18" alt="Zinzin animated header" />
 
 <img
   src="https://readme-typing-svg.demolab.com?font=JetBrains+Mono&weight=600&size=20&duration=2800&pause=900&color=67E8F9&center=true&vCenter=true&width=760&lines=Building+reliable+backend+systems;Designing+maintainable+APIs;React+%7C+Next.js+%7C+ASP.NET+Core;Building+secure+data-driven+applications;Debugging+systems%2C+not+just+code;Open+to+Software+Developer+Internships"
