@@ -364,7 +364,7 @@ def minecraftify(path: Path) -> None:
             f"@keyframes harvest{i}{{"
             f"0%,{fmt(pickup - .05)}%{{opacity:1;fill:{color}}}"
             f"{fmt(pickup)}%,{fmt(reset)}%{{opacity:0;fill:{color}}}"
-            f"100%{{opacity:1;fill:{color}}"
+            f"100%{{opacity:1;fill:{color}}}"
             f"}}"
         )
 
