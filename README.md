@@ -81,14 +81,14 @@ Full-stack gym management and commerce platform built with **React 18**, **TypeS
   <img src="https://img.shields.io/badge/View_Project-GymFit-7C3AED?style=for-the-badge&logo=github&logoColor=white" alt="GymFit" />
 </a>
 
-## ⛏️ Steven's Contribution Build
+## 🌾 Steven's Contribution Farm
 
 <div align="center">
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/vinh17491/vinh17491/output/github-contribution-mine-dark.svg" />
   <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/vinh17491/vinh17491/output/github-contribution-mine.svg" />
-  <img alt="Steven mining contributions and building a voxel house" src="https://raw.githubusercontent.com/vinh17491/vinh17491/output/github-contribution-mine.svg" />
+  <img alt="Steven harvesting contribution blocks to feed pigs, cows and sheep" src="https://raw.githubusercontent.com/vinh17491/vinh17491/output/github-contribution-mine.svg" />
 </picture>
 
 </div>
