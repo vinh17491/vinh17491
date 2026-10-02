@@ -5,6 +5,11 @@ import re
 import sys
 from pathlib import Path
 
+LOOP_MS = 28000
+TRIP_COUNT = 10
+BUILD_STAND_X = 664
+BUILD_STAND_Y = 116
+
 PIXEL_COLORS = ("#22D3EE", "#34D399", "#FACC15", "#A78BFA", "#F97316", "#84CC16")
 
 
@@ -12,380 +17,365 @@ def fmt(value: float) -> str:
     return f"{value:.2f}".rstrip("0").rstrip(".")
 
 
-def pct(value: float) -> float:
-    return max(0.0, min(99.0, value))
+def clamp(value: float, low: float = 0.0, high: float = 100.0) -> float:
+    return max(low, min(high, value))
 
 
-def pop_keyframes(name: str, start: float, direction: str = "y") -> str:
-    start = pct(start)
-    on = pct(start + 0.8)
-    if direction == "roof":
-        hidden = "opacity:0;transform:translateY(-10px) scale(.7)"
-        shown = "opacity:1;transform:translateY(0) scale(1)"
-    elif direction == "x":
-        hidden = "opacity:0;transform:scaleX(0)"
-        shown = "opacity:1;transform:scaleX(1)"
-    else:
-        hidden = "opacity:0;transform:scaleY(0)"
-        shown = "opacity:1;transform:scaleY(1)"
+def select_mining_blocks(svg: str, count: int) -> list[tuple[str, float, float]]:
+    matches = re.findall(
+        r'<rect class="c (c[0-9a-z]+)" x="([0-9.]+)" y="([0-9.]+)"',
+        svg,
+    )
+    unique: list[tuple[str, float, float]] = []
+    seen: set[str] = set()
+
+    for cls, x, y in matches:
+        if cls in seen:
+            continue
+        seen.add(cls)
+        unique.append((cls, float(x), float(y)))
+
+    unique.sort(key=lambda item: (item[1], item[2]))
+
+    if not unique:
+        raise RuntimeError("No contribution blocks were found in the generated SVG")
+
+    if len(unique) <= count:
+        return unique
+
+    # Spread the trips across the contribution history instead of mining
+    # several neighbouring blocks in a row.
+    selected: list[tuple[str, float, float]] = []
+    for i in range(count):
+        index = round(i * (len(unique) - 1) / (count - 1))
+        selected.append(unique[index])
+    return selected
+
+
+def steven_markup() -> str:
     return (
-        f"@keyframes {name}{{"
-        f"0%,{fmt(start)}%{{{hidden}}}"
-        f"{fmt(on)}%,99%{{{shown}}}"
-        f"100%{{opacity:0}}"
-        f"}}"
+        '<g id="steven" aria-hidden="true">'
+        '<g class="steven-body">'
+        # legs
+        '<rect x="5" y="26" width="6" height="10" fill="#1D4ED8"/>'
+        '<rect x="12" y="26" width="6" height="10" fill="#1E40AF"/>'
+        '<rect x="4" y="35" width="7" height="3" fill="#111827"/>'
+        '<rect x="12" y="35" width="7" height="3" fill="#111827"/>'
+        # torso
+        '<rect x="4" y="14" width="15" height="13" fill="#22D3EE"/>'
+        '<rect x="5" y="15" width="13" height="3" fill="#67E8F9"/>'
+        # head
+        '<rect x="5" y="2" width="14" height="13" fill="#C98D62"/>'
+        '<rect x="5" y="2" width="14" height="4" fill="#3F2A1D"/>'
+        '<rect x="7" y="7" width="3" height="2" fill="#E5E7EB"/>'
+        '<rect x="14" y="7" width="3" height="2" fill="#E5E7EB"/>'
+        '<rect x="8" y="7" width="1" height="2" fill="#2563EB"/>'
+        '<rect x="15" y="7" width="1" height="2" fill="#2563EB"/>'
+        # left arm
+        '<rect x="1" y="15" width="4" height="11" fill="#C98D62"/>'
+        # mining arm + pickaxe
+        '<g class="pickaxe-arm">'
+        '<rect x="18" y="15" width="4" height="11" fill="#C98D62"/>'
+        '<rect x="22" y="7" width="3" height="22" fill="#8B5A2B"/>'
+        '<rect x="17" y="5" width="15" height="4" fill="#A3A3A3"/>'
+        '<rect x="15" y="6" width="5" height="3" fill="#D4D4D4"/>'
+        '</g>'
+        # exactly one carried block appears only on the return trip
+        '<g class="carried-block">'
+        '<rect x="-8" y="17" width="10" height="10" fill="#A16207" stroke="#111827" stroke-width="1"/>'
+        '<rect x="-6" y="19" width="3" height="3" fill="#D97706"/>'
+        '</g>'
+        # reward trophy only after the house is complete
+        '<g class="reward-trophy">'
+        '<rect x="-2" y="4" width="11" height="7" fill="#FDE047"/>'
+        '<rect x="-5" y="5" width="4" height="5" fill="none" stroke="#FACC15" stroke-width="2"/>'
+        '<rect x="9" y="5" width="4" height="5" fill="none" stroke="#FACC15" stroke-width="2"/>'
+        '<rect x="2" y="11" width="3" height="8" fill="#FACC15"/>'
+        '<rect x="-1" y="19" width="9" height="3" fill="#A16207"/>'
+        '</g>'
+        '</g>'
+        '</g>'
     )
 
 
-def visibility_keyframes(name: str, show: float, hide: float) -> str:
-    show = pct(show)
-    hide = pct(hide)
-    a = max(0.0, show - 0.15)
-    b = min(99.0, show + 0.15)
-    c = max(b, hide - 0.15)
-    d = min(99.4, hide + 0.15)
-    return (
-        f"@keyframes {name}{{"
-        f"0%,{fmt(a)}%{{opacity:0}}"
-        f"{fmt(b)}%,{fmt(c)}%{{opacity:1}}"
-        f"{fmt(d)}%,100%{{opacity:0}}"
-        f"}}"
+def house_pieces_markup() -> str:
+    pieces = [
+        # foundation: 3 blocks
+        ('<rect x="700" y="160" width="18" height="16" fill="#65A30D"/>'
+         '<rect x="700" y="168" width="18" height="8" fill="#795548"/>'),
+        ('<rect x="718" y="160" width="18" height="16" fill="#65A30D"/>'
+         '<rect x="718" y="168" width="18" height="8" fill="#795548"/>'),
+        ('<rect x="736" y="160" width="18" height="16" fill="#65A30D"/>'
+         '<rect x="736" y="168" width="18" height="8" fill="#795548"/>'),
+        # walls: 3 blocks
+        ('<rect x="700" y="142" width="18" height="18" fill="#A16207"/>'
+         '<path d="M702 148h14M702 154h14" stroke="#7C4A17" stroke-width="2"/>'),
+        ('<rect x="718" y="142" width="18" height="18" fill="#B45309"/>'
+         '<rect x="723" y="146" width="8" height="14" fill="#5B3A29"/>'
+         '<rect x="729" y="153" width="2" height="2" fill="#FACC15"/>'),
+        ('<rect x="736" y="142" width="18" height="18" fill="#A16207"/>'
+         '<rect x="740" y="146" width="10" height="8" fill="#67E8F9"/>'
+         '<path d="M745 146v8M740 150h10" stroke="#E0F2FE" stroke-width="1"/>'),
+        # upper wall / trim
+        ('<rect x="709" y="126" width="36" height="16" fill="#92400E"/>'
+         '<rect x="713" y="130" width="28" height="8" fill="#B45309"/>'),
+        # roof: 3 blocks/pieces
+        ('<path d="M697 128 L715 116 L724 128 Z" fill="#991B1B"/>'
+         '<path d="M700 126 L715 119 L721 126 Z" fill="#DC2626"/>'),
+        ('<path d="M714 128 L727 108 L741 128 Z" fill="#7F1D1D"/>'
+         '<path d="M718 126 L727 112 L737 126 Z" fill="#EF4444"/>'),
+        ('<path d="M738 128 L747 116 L758 128 Z" fill="#991B1B"/>'
+         '<path d="M741 126 L747 119 L755 126 Z" fill="#DC2626"/>'),
+    ]
+
+    out = ['<g id="voxel-house" aria-hidden="true">']
+    # subtle build pad is visible from the start so the destination is clear
+    out.append('<rect x="694" y="176" width="66" height="3" fill="#3F6212" opacity=".45"/>')
+    for i, markup in enumerate(pieces):
+        out.append(f'<g class="house-piece piece-{i}">{markup}</g>')
+    # torch appears with the last roof piece
+    out.append(
+        '<g class="house-piece piece-9">'
+        '<rect x="704" y="143" width="3" height="10" fill="#8B5A2B"/>'
+        '<rect x="703" y="139" width="5" height="6" fill="#F59E0B"/>'
+        '<rect x="704" y="138" width="3" height="3" fill="#FDE047"/>'
+        '</g>'
     )
-
-
-def loot_keyframes(name: str, start: float, end: float, dx: float, dy: float) -> str:
-    start = pct(start)
-    end = pct(end)
-    mid = (start + end) / 2
-    return (
-        f"@keyframes {name}{{"
-        f"0%,{fmt(start)}%{{opacity:0;transform:translate(0,0) rotate(0deg) scale(.5)}}"
-        f"{fmt(start + .25)}%{{opacity:1}}"
-        f"{fmt(mid)}%{{opacity:1;transform:translate({fmt(dx*.55)}px,{fmt(dy*.25 - 16)}px) rotate(90deg) scale(1)}}"
-        f"{fmt(end)}%{{opacity:1;transform:translate({fmt(dx)}px,{fmt(dy)}px) rotate(180deg) scale(.7)}}"
-        f"{fmt(end + .35)}%,100%{{opacity:0;transform:translate({fmt(dx)}px,{fmt(dy)}px) rotate(180deg) scale(.3)}}"
-        f"}}"
-    )
-
-
-def particle_keyframes(start: float) -> str:
-    a = pct(start)
-    b = pct(start + 0.5)
-    c = pct(start + 3.5)
-    d = pct(start + 6.0)
-    return (
-        "@keyframes voxelBurst{"
-        f"0%,{fmt(a)}%{{opacity:0;transform:translate(0,0) scale(.3)}}"
-        f"{fmt(b)}%{{opacity:1;transform:translate(0,0) scale(.8)}}"
-        f"{fmt(c)}%{{opacity:1;transform:translate(var(--dx),var(--dy)) scale(1)}}"
-        f"{fmt(d)}%,100%{{opacity:0;transform:translate(calc(var(--dx)*1.2),calc(var(--dy)*1.2)) scale(.4)}}"
-        "}"
-    )
-
-
-def completion_keyframes(start: float) -> str:
-    a = pct(start)
-    b = pct(start + 0.5)
-    c = pct(start + 4.5)
-    d = 99.2
-    return (
-        "@keyframes completeText{"
-        f"0%,{fmt(a)}%{{opacity:0;transform:translateY(4px)}}"
-        f"{fmt(b)}%,{fmt(c)}%{{opacity:1;transform:translateY(0)}}"
-        f"{fmt(d)}%,100%{{opacity:0;transform:translateY(-2px)}}"
-        "}"
-    )
-
-
-def trophy_keyframes(start: float) -> str:
-    a = pct(start)
-    b = pct(start + 1.0)
-    c = pct(start + 3.8)
-    return (
-        "@keyframes trophyRaise{"
-        f"0%,{fmt(a)}%{{opacity:0;transform:translate(0,8px) rotate(-8deg)}}"
-        f"{fmt(b)}%,{fmt(c)}%{{opacity:1;transform:translate(0,-8px) rotate(0deg)}}"
-        "99%{opacity:1;transform:translate(0,-8px)}"
-        "100%{opacity:0}"
-        "}"
-    )
+    out.append('</g>')
+    return "".join(out)
 
 
 def particles_markup(cx: float, cy: float) -> str:
     parts = ['<g id="build-particles" aria-hidden="true">']
-    for i in range(22):
-        angle = math.radians(i * (360 / 22))
-        distance = 24 + (i % 5) * 9
+    for i in range(20):
+        angle = math.radians(i * 18)
+        distance = 22 + (i % 5) * 8
         dx = math.cos(angle) * distance
         dy = math.sin(angle) * distance
-        size = 3 + (i % 3) * 2
+        size = 3 + (i % 3)
         color = PIXEL_COLORS[i % len(PIXEL_COLORS)]
         parts.append(
             f'<rect class="voxel-particle" x="{fmt(cx-size/2)}" y="{fmt(cy-size/2)}" '
             f'width="{size}" height="{size}" fill="{color}" '
             f'style="--dx:{fmt(dx)}px;--dy:{fmt(dy)}px"/>'
         )
-    parts.append("</g>")
+    parts.append('</g>')
     return "".join(parts)
 
 
-def miner_markup() -> str:
-    return (
-        '<g class="miner-path" aria-hidden="true">'
-        '<g transform="translate(-9,-25)">'
-        '<g class="miner-bob">'
-        # trophy/backpack
-        '<rect x="-5" y="10" width="6" height="12" fill="#8B5A2B"/>'
-        '<rect x="-4" y="11" width="4" height="4" fill="#FACC15"/>'
-        # legs
-        '<rect x="5" y="25" width="6" height="10" fill="#1D4ED8"/>'
-        '<rect x="12" y="25" width="6" height="10" fill="#1E40AF"/>'
-        '<rect x="4" y="34" width="7" height="3" fill="#111827"/>'
-        '<rect x="12" y="34" width="7" height="3" fill="#111827"/>'
-        # torso
-        '<rect x="4" y="13" width="15" height="13" fill="#22D3EE"/>'
-        '<rect x="5" y="14" width="13" height="3" fill="#67E8F9"/>'
-        # head
-        '<rect x="5" y="1" width="14" height="13" fill="#C98D62"/>'
-        '<rect x="5" y="1" width="14" height="4" fill="#3F2A1D"/>'
-        '<rect x="7" y="6" width="3" height="2" fill="#E5E7EB"/>'
-        '<rect x="14" y="6" width="3" height="2" fill="#E5E7EB"/>'
-        '<rect x="8" y="6" width="1" height="2" fill="#2563EB"/>'
-        '<rect x="15" y="6" width="1" height="2" fill="#2563EB"/>'
-        # mining arm + pickaxe
-        '<g class="pick-swing">'
-        '<rect x="18" y="14" width="4" height="11" fill="#C98D62"/>'
-        '<rect x="21" y="7" width="3" height="21" fill="#8B5A2B"/>'
-        '<rect x="17" y="5" width="14" height="4" fill="#A3A3A3"/>'
-        '<rect x="15" y="6" width="5" height="3" fill="#D4D4D4"/>'
-        '</g>'
-        '</g>'
-        '</g>'
-        '</g>'
-    )
+def build_motion_keyframes(
+    mining_blocks: list[tuple[str, float, float]],
+) -> tuple[str, list[float], list[float]]:
+    start_pct = 2.0
+    end_pct = 86.0
+    span = (end_pct - start_pct) / len(mining_blocks)
+
+    motion_points: list[tuple[float, float, float]] = []
+    mine_times: list[float] = []
+    place_times: list[float] = []
+
+    # Start at the build site, then repeatedly go get one block and return it.
+    motion_points.append((0.0, BUILD_STAND_X, BUILD_STAND_Y))
+    motion_points.append((start_pct, BUILD_STAND_X, BUILD_STAND_Y))
+
+    for i, (_, bx, by) in enumerate(mining_blocks):
+        trip = start_pct + i * span
+        mine_x = bx - 8
+        mine_y = by - 35
+
+        arrive_mine = trip + span * 0.30
+        finish_mine = trip + span * 0.40
+        arrive_build = trip + span * 0.78
+        finish_place = trip + span * 0.90
+
+        motion_points.extend(
+            [
+                (arrive_mine, mine_x, mine_y),
+                (finish_mine, mine_x, mine_y),
+                (arrive_build, BUILD_STAND_X, BUILD_STAND_Y),
+                (finish_place, BUILD_STAND_X, BUILD_STAND_Y),
+            ]
+        )
+
+        mine_times.append(finish_mine)
+        place_times.append(finish_place)
+
+    motion_points.append((92.0, BUILD_STAND_X, BUILD_STAND_Y))
+    motion_points.append((99.5, BUILD_STAND_X, BUILD_STAND_Y))
+    motion_points.append((100.0, BUILD_STAND_X, BUILD_STAND_Y))
+
+    # Remove duplicate percentages and keep the latest coordinate.
+    compact: dict[float, tuple[float, float]] = {}
+    for p, x, y in motion_points:
+        compact[round(clamp(p), 2)] = (x, y)
+
+    frames = []
+    for p in sorted(compact):
+        x, y = compact[p]
+        frames.append(f"{fmt(p)}%{{transform:translate({fmt(x)}px,{fmt(y)}px)}}")
+
+    return "@keyframes stevenRoute{" + "".join(frames) + "}", mine_times, place_times
 
 
-def builder_markup() -> str:
-    return (
-        '<g class="builder" transform="translate(625,115)" aria-hidden="true">'
-        '<g class="builder-bob">'
-        '<rect x="5" y="25" width="6" height="10" fill="#1D4ED8"/>'
-        '<rect x="12" y="25" width="6" height="10" fill="#1E40AF"/>'
-        '<rect x="4" y="34" width="7" height="3" fill="#111827"/>'
-        '<rect x="12" y="34" width="7" height="3" fill="#111827"/>'
-        '<rect x="4" y="13" width="15" height="13" fill="#22D3EE"/>'
-        '<rect x="5" y="1" width="14" height="13" fill="#C98D62"/>'
-        '<rect x="5" y="1" width="14" height="4" fill="#3F2A1D"/>'
-        '<rect x="7" y="6" width="3" height="2" fill="#E5E7EB"/>'
-        '<rect x="14" y="6" width="3" height="2" fill="#E5E7EB"/>'
-        '<rect x="8" y="6" width="1" height="2" fill="#2563EB"/>'
-        '<rect x="15" y="6" width="1" height="2" fill="#2563EB"/>'
-        # carried block
-        '<rect class="carried-block" x="20" y="16" width="9" height="9" fill="#8B5A2B"/>'
-        '<rect class="carried-block" x="21" y="17" width="3" height="3" fill="#A16207"/>'
-        # trophy
-        '<g class="trophy">'
-        '<rect x="-1" y="7" width="3" height="12" fill="#FACC15"/>'
-        '<rect x="-5" y="4" width="11" height="7" fill="#FDE047"/>'
-        '<rect x="-8" y="5" width="4" height="5" fill="none" stroke="#FACC15" stroke-width="2"/>'
-        '<rect x="6" y="5" width="4" height="5" fill="none" stroke="#FACC15" stroke-width="2"/>'
-        '<rect x="0" y="18" width="5" height="3" fill="#CA8A04"/>'
-        '<rect x="-2" y="21" width="9" height="3" fill="#A16207"/>'
-        '</g>'
-        '</g>'
-        '</g>'
-    )
+def carried_block_keyframes(
+    mining_blocks: list[tuple[str, float, float]],
+) -> str:
+    start_pct = 2.0
+    end_pct = 86.0
+    span = (end_pct - start_pct) / len(mining_blocks)
+    frames = ["0%{opacity:0}"]
+
+    for i in range(len(mining_blocks)):
+        trip = start_pct + i * span
+        pickup = trip + span * 0.42
+        carry_end = trip + span * 0.78
+        drop = trip + span * 0.90
+
+        frames.extend(
+            [
+                f"{fmt(pickup - .08)}%{{opacity:0}}",
+                f"{fmt(pickup)}%{{opacity:1}}",
+                f"{fmt(carry_end)}%{{opacity:1}}",
+                f"{fmt(drop)}%{{opacity:0}}",
+            ]
+        )
+
+    frames.append("100%{opacity:0}")
+    return "@keyframes carryOneBlock{" + "".join(frames) + "}"
 
 
-def house_markup() -> str:
-    return (
-        '<g id="voxel-house" aria-hidden="true">'
-        # grass/foundation
-        '<g class="house-base">'
-        '<rect x="682" y="161" width="126" height="9" fill="#65A30D"/>'
-        '<rect x="682" y="169" width="126" height="7" fill="#795548"/>'
-        '<rect x="688" y="162" width="18" height="2" fill="#A3E635"/>'
-        '<rect x="748" y="162" width="22" height="2" fill="#A3E635"/>'
-        '</g>'
-        # wall lower
-        '<g class="house-wall-a">'
-        '<rect x="696" y="136" width="98" height="26" fill="#A16207"/>'
-        '<rect x="699" y="139" width="92" height="20" fill="#B7791F"/>'
-        '<path d="M699 146h92M699 153h92" stroke="#7C4A17" stroke-width="2"/>'
-        '</g>'
-        # wall upper
-        '<g class="house-wall-b">'
-        '<rect x="705" y="121" width="80" height="17" fill="#92400E"/>'
-        '<rect x="708" y="124" width="74" height="11" fill="#B45309"/>'
-        '</g>'
-        # roof
-        '<g class="house-roof">'
-        '<path d="M690 124 L744 99 L801 124 Z" fill="#7F1D1D"/>'
-        '<path d="M697 123 L744 104 L793 123 Z" fill="#B91C1C"/>'
-        '<rect x="739" y="101" width="10" height="4" fill="#EF4444"/>'
-        '</g>'
-        # door
-        '<g class="house-door">'
-        '<rect x="735" y="141" width="18" height="21" fill="#5B3A29"/>'
-        '<rect x="738" y="144" width="12" height="18" fill="#6B4423"/>'
-        '<rect x="748" y="153" width="2" height="2" fill="#FACC15"/>'
-        '</g>'
-        # window + torch
-        '<g class="house-window">'
-        '<rect x="766" y="142" width="15" height="13" fill="#422006"/>'
-        '<rect x="769" y="144" width="9" height="8" fill="#67E8F9"/>'
-        '<path d="M773.5 144v8M769 148h9" stroke="#E0F2FE" stroke-width="1"/>'
-        '<rect x="711" y="143" width="3" height="10" fill="#8B5A2B"/>'
-        '<rect x="710" y="139" width="5" height="6" fill="#F59E0B"/>'
-        '<rect x="711" y="138" width="3" height="3" fill="#FDE047"/>'
-        '</g>'
-        '</g>'
-    )
+def status_keyframes(
+    mining_blocks: list[tuple[str, float, float]],
+) -> str:
+    start_pct = 2.0
+    end_pct = 86.0
+    span = (end_pct - start_pct) / len(mining_blocks)
+    frames = ["0%{opacity:.55}"]
 
+    for i in range(len(mining_blocks)):
+        trip = start_pct + i * span
+        mine = trip + span * 0.30
+        return_trip = trip + span * 0.42
+        place = trip + span * 0.78
 
-def inventory_markup() -> str:
-    return (
-        '<g id="inventory" aria-hidden="true">'
-        '<rect x="18" y="166" width="176" height="17" rx="2" fill="#111827" stroke="#57534E" stroke-width="2"/>'
-        '<rect class="xp-fill" x="23" y="171" width="128" height="7" fill="#84CC16"/>'
-        '<text x="158" y="178" font-family="monospace" font-size="10" font-weight="700" fill="#A3E635">XP</text>'
-        '<rect x="205" y="164" width="22" height="22" fill="#292524" stroke="#78716C" stroke-width="2"/>'
-        '<rect class="inv-block" x="211" y="170" width="10" height="10" fill="#A16207"/>'
-        '<text class="inv-count" x="232" y="179" font-family="monospace" font-size="10" font-weight="700" fill="#E7E5E4">BLOCKS</text>'
-        '</g>'
-    )
+        frames.extend(
+            [
+                f"{fmt(mine)}%{{opacity:1}}",
+                f"{fmt(return_trip)}%{{opacity:.75}}",
+                f"{fmt(place)}%{{opacity:1}}",
+            ]
+        )
+
+    frames.extend(["90%{opacity:1}", "100%{opacity:.55}"])
+    return "@keyframes statusPulse{" + "".join(frames) + "}"
 
 
 def minecraftify(path: Path) -> None:
     svg = path.read_text(encoding="utf-8")
 
-    if 'id="steven-builder-scene"' in svg:
+    if 'id="one-block-build-loop"' in svg:
         return
 
-    duration_match = re.search(r"animation:none\s+(\d+)ms\s+linear\s+infinite", svg)
-    if not duration_match:
-        raise RuntimeError(f"Could not determine animation duration in {path}")
-    duration = duration_match.group(1)
+    mining_blocks = select_mining_blocks(svg, TRIP_COUNT)
+    route_css, mine_times, place_times = build_motion_keyframes(mining_blocks)
 
-    eaten = [
-        float(value)
-        for value in re.findall(
-            r"@keyframes\s+c[0-9a-z]+\{([0-9]+(?:\.[0-9]+)?)%\{fill:",
-            svg,
-        )
+    css_parts = [
+        ".s{display:none!important}",
+        ".u{display:none!important}",
+        ".c{animation:none!important;shape-rendering:crispEdges;rx:0;ry:0;stroke:#111827;stroke-width:1.1px}",
+        f".steven-route{{animation:stevenRoute {LOOP_MS}ms linear infinite}}",
+        ".steven-body{animation:stevenBob 420ms steps(2,end) infinite}",
+        "@keyframes stevenBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}",
+        ".pickaxe-arm{animation:pickSwing 320ms steps(2,end) infinite;transform-origin:20px 18px}",
+        "@keyframes pickSwing{0%,100%{transform:rotate(-28deg)}50%{transform:rotate(34deg)}}",
+        f".carried-block{{opacity:0;animation:carryOneBlock {LOOP_MS}ms steps(1,end) infinite}}",
+        f".scene-status{{animation:statusPulse {LOOP_MS}ms steps(1,end) infinite}}",
+        route_css,
+        carried_block_keyframes(mining_blocks),
+        status_keyframes(mining_blocks),
     ]
-    if not eaten:
-        raise RuntimeError(f"Could not determine contribution timing in {path}")
 
-    last_eaten = max(eaten)
-    room = max(14.0, 98.0 - last_eaten)
+    # Each selected contribution block disappears only when Steven mines it.
+    # Each house piece appears only after he returns and places that one block.
+    for i, ((cls, _, _), mine_time, place_time) in enumerate(
+        zip(mining_blocks, mine_times, place_times)
+    ):
+        reset = 99.65
+        css_parts.append(
+            f".c.{cls}{{animation:mineBlock{i} {LOOP_MS}ms steps(1,end) infinite!important}}"
+            f"@keyframes mineBlock{i}{{"
+            f"0%,{fmt(mine_time - .05)}%{{opacity:1}}"
+            f"{fmt(mine_time)}%,{fmt(reset)}%{{opacity:0}}"
+            "100%{opacity:1}"
+            "}"
+        )
+        css_parts.append(
+            f".piece-{i}{{opacity:0;animation:placePiece{i} {LOOP_MS}ms steps(1,end) infinite}}"
+            f"@keyframes placePiece{i}{{"
+            f"0%,{fmt(place_time - .05)}%{{opacity:0}}"
+            f"{fmt(place_time)}%,99.65%{{opacity:1}}"
+            "100%{opacity:0}"
+            "}"
+        )
 
-    loot_start = last_eaten + room * 0.04
-    builder_show = last_eaten + room * 0.14
-    phase_base = last_eaten + room * 0.22
-    phase_wall_a = last_eaten + room * 0.34
-    phase_wall_b = last_eaten + room * 0.46
-    phase_roof = last_eaten + room * 0.58
-    phase_door = last_eaten + room * 0.68
-    phase_window = last_eaten + room * 0.76
-    trophy_start = last_eaten + room * 0.84
-    complete_start = last_eaten + room * 0.88
-    burst_start = last_eaten + room * 0.90
-
-    css = (
-        ".s{display:none!important}"
-        ".u{display:none!important}"
-        ".c{shape-rendering:crispEdges;rx:0;ry:0;stroke:#111827;stroke-width:1.15px}"
-        f".miner-path{{animation:s0 {duration}ms linear infinite,minerVis {duration}ms steps(1,end) infinite}}"
-        f"@keyframes minerVis{{0%,{fmt(pct(last_eaten + .15))}%{{opacity:1}}"
-        f"{fmt(pct(last_eaten + .7))}%,100%{{opacity:0}}}}"
-        ".miner-bob{animation:minerBob 460ms steps(2,end) infinite}"
-        "@keyframes minerBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}"
-        ".pick-swing{animation:pickSwing 330ms steps(2,end) infinite;transform-origin:21px 18px}"
-        "@keyframes pickSwing{0%,100%{transform:rotate(-28deg)}50%{transform:rotate(32deg)}}"
-        f".builder{{animation:builderVis {duration}ms steps(1,end) infinite}}"
-        + visibility_keyframes("builderVis", builder_show, 99.1)
-        + ".builder-bob{animation:builderBob 520ms steps(2,end) infinite}"
-        "@keyframes builderBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-1px)}}"
-        f".carried-block{{animation:carryBlock {duration}ms steps(2,end) infinite}}"
-        f"@keyframes carryBlock{{0%,{fmt(pct(phase_wall_b))}%{{opacity:1}}"
-        f"{fmt(pct(phase_roof))}%,100%{{opacity:0}}}}"
-        f".trophy{{opacity:0;animation:trophyRaise {duration}ms steps(4,end) infinite}}"
-        + trophy_keyframes(trophy_start)
-        + f".house-base{{transform-box:fill-box;transform-origin:center bottom;animation:houseBase {duration}ms steps(5,end) infinite}}"
-        + pop_keyframes("houseBase", phase_base)
-        + f".house-wall-a{{transform-box:fill-box;transform-origin:center bottom;animation:houseWallA {duration}ms steps(5,end) infinite}}"
-        + pop_keyframes("houseWallA", phase_wall_a)
-        + f".house-wall-b{{transform-box:fill-box;transform-origin:center bottom;animation:houseWallB {duration}ms steps(5,end) infinite}}"
-        + pop_keyframes("houseWallB", phase_wall_b)
-        + f".house-roof{{transform-box:fill-box;transform-origin:center center;animation:houseRoof {duration}ms steps(5,end) infinite}}"
-        + pop_keyframes("houseRoof", phase_roof, "roof")
-        + f".house-door{{transform-box:fill-box;transform-origin:center bottom;animation:houseDoor {duration}ms steps(4,end) infinite}}"
-        + pop_keyframes("houseDoor", phase_door)
-        + f".house-window{{transform-box:fill-box;transform-origin:center center;animation:houseWindow {duration}ms steps(4,end) infinite}}"
-        + pop_keyframes("houseWindow", phase_window, "x")
-        + f".voxel-particle{{opacity:0;shape-rendering:crispEdges;animation:voxelBurst {duration}ms steps(8,end) infinite}}"
-        + particle_keyframes(burst_start)
-        + f".build-complete{{opacity:0;font-family:monospace;font-weight:900;letter-spacing:1.5px;animation:completeText {duration}ms steps(2,end) infinite}}"
-        + completion_keyframes(complete_start)
-        + f".xp-fill{{transform-origin:left center;animation:xpFill {duration}ms linear infinite}}"
-        f"@keyframes xpFill{{0%,{fmt(pct(last_eaten))}%{{transform:scaleX(.2)}}"
-        f"{fmt(pct(phase_window))}%{{transform:scaleX(.82)}}"
-        f"{fmt(pct(complete_start))}%,99%{{transform:scaleX(1)}}100%{{transform:scaleX(.2)}}}}"
-        + f".inv-count{{animation:invText {duration}ms steps(1,end) infinite}}"
-        f"@keyframes invText{{0%,{fmt(pct(last_eaten))}%{{opacity:.45}}"
-        f"{fmt(pct(loot_start))}%,99%{{opacity:1}}100%{{opacity:.45}}}}"
+    complete_at = 88.0
+    css_parts.extend(
+        [
+            f".reward-trophy{{opacity:0;animation:rewardTrophy {LOOP_MS}ms steps(3,end) infinite}}",
+            "@keyframes rewardTrophy{"
+            f"0%,{fmt(complete_at)}%{{opacity:0;transform:translateY(7px)}}"
+            "89%,97.5%{opacity:1;transform:translateY(-7px)}"
+            "99.5%,100%{opacity:0;transform:translateY(7px)}}",
+            f".build-complete{{opacity:0;font-family:monospace;font-weight:900;letter-spacing:1.5px;"
+            f"animation:completeText {LOOP_MS}ms steps(2,end) infinite}}",
+            "@keyframes completeText{0%,88%{opacity:0}89%,97%{opacity:1}99.5%,100%{opacity:0}}",
+            f".voxel-particle{{opacity:0;shape-rendering:crispEdges;animation:voxelBurst {LOOP_MS}ms steps(8,end) infinite}}",
+            "@keyframes voxelBurst{"
+            "0%,88%{opacity:0;transform:translate(0,0) scale(.3)}"
+            "89%{opacity:1;transform:translate(0,0) scale(.8)}"
+            "94%{opacity:1;transform:translate(var(--dx),var(--dy)) scale(1)}"
+            "98%,100%{opacity:0;transform:translate(calc(var(--dx)*1.2),calc(var(--dy)*1.2)) scale(.4)}}",
+            f".xp-fill{{transform-origin:left center;animation:xpFill {LOOP_MS}ms steps({len(place_times)},end) infinite}}",
+        ]
     )
 
-    loot_specs = [
-        (90, 28, 610, 100),
-        (210, 70, 500, 58),
-        (340, 42, 380, 86),
-        (470, 76, 260, 56),
-        (590, 30, 150, 102),
-        (710, 62, 45, 68),
-    ]
-    loot_parts = ['<g id="collected-blocks" aria-hidden="true">']
-    for i, (x, y, dx, dy) in enumerate(loot_specs):
-        start = loot_start + i * 0.35
-        end = builder_show + 2.8 + i * 0.2
-        css += (
-            f".loot-{i}{{transform-box:fill-box;animation:loot{i} {duration}ms steps(12,end) infinite}}"
-            + loot_keyframes(f"loot{i}", start, end, dx, dy)
-        )
-        fill = ("#A16207", "#78716C", "#16A34A", "#22D3EE", "#A16207", "#84CC16")[i]
-        loot_parts.append(
-            f'<rect class="loot-{i}" x="{x}" y="{y}" width="9" height="9" fill="{fill}" '
-            f'stroke="#111827" stroke-width="1"/>'
-        )
-    loot_parts.append("</g>")
+    xp_frames = ["0%{transform:scaleX(.05)}"]
+    for i, place_time in enumerate(place_times, start=1):
+        scale = i / len(place_times)
+        xp_frames.append(f"{fmt(place_time)}%{{transform:scaleX({scale:.3f})}}")
+    xp_frames.extend(["99.5%{transform:scaleX(1)}", "100%{transform:scaleX(.05)}"])
+    css_parts.append("@keyframes xpFill{" + "".join(xp_frames) + "}")
 
     scene = (
-        '<g id="steven-builder-scene">'
-        + miner_markup()
-        + "".join(loot_parts)
-        + builder_markup()
-        + house_markup()
-        + inventory_markup()
-        + particles_markup(744, 121)
-        + '<text class="build-complete" x="744" y="91" text-anchor="middle" font-size="14" fill="#A3E635">'
+        '<g id="one-block-build-loop">'
+        '<g class="steven-route">'
+        + steven_markup()
+        + '</g>'
+        + house_pieces_markup()
+        + '<g id="hud" aria-hidden="true">'
+          '<rect x="18" y="166" width="180" height="17" rx="2" fill="#111827" stroke="#57534E" stroke-width="2"/>'
+          '<rect class="xp-fill" x="23" y="171" width="130" height="7" fill="#84CC16"/>'
+          '<text x="160" y="178" font-family="monospace" font-size="10" font-weight="800" fill="#A3E635">XP</text>'
+          '<text class="scene-status" x="205" y="178" font-family="monospace" font-size="10" font-weight="800" fill="#E7E5E4">'
+          '1 BLOCK → 1 BUILD → REPEAT</text>'
+        '</g>'
+        + particles_markup(728, 126)
+        + '<text class="build-complete" x="728" y="103" text-anchor="middle" font-size="13" fill="#A3E635">'
           'BUILD COMPLETE +XP</text>'
-        + '<text x="18" y="157" font-family="monospace" font-size="10" font-weight="800" fill="#A3E635">'
-          'STEVEN // MINING → COLLECTING → BUILDING</text>'
         + '</g>'
     )
 
     if "</style>" not in svg or "</svg>" not in svg:
         raise RuntimeError(f"Unexpected SVG structure in {path}")
 
-    svg = svg.replace("</style>", css + "</style>", 1)
+    svg = svg.replace("</style>", "".join(css_parts) + "</style>", 1)
     svg = svg.replace("</svg>", scene + "</svg>", 1)
     path.write_text(svg, encoding="utf-8")
 
+    selected = ", ".join(cls for cls, _, _ in mining_blocks)
     print(
-        f"Steven builder scene added to {path}; last mined contribution "
-        f"at {fmt(last_eaten)}%, build completes near {fmt(complete_start)}% "
-        f"of {duration}ms cycle"
+        f"Added one-block-at-a-time Steven build loop to {path}: "
+        f"{len(mining_blocks)} round trips, selected contributions [{selected}]"
     )
 
 
