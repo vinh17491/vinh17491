@@ -1,4 +1,4 @@
-name: Generate contribution mine
+name: Generate contribution farm
 
 on:
   schedule:
@@ -31,13 +31,13 @@ jobs:
             dist/github-contribution-mine.svg?color_snake=%2384CC16&color_dots=%23d6d3d1,%23795548,%2378716c,%2316a34a,%2322d3ee
             dist/github-contribution-mine-dark.svg?palette=github-dark&color_snake=%2384CC16&color_dots=%231c1917,%235b4636,%2357534e,%2316a34a,%2322d3ee
 
-      - name: Convert to voxel mining animation
+      - name: Convert to voxel farm animation
         run: |
           python .github/scripts/minecraftify_contributions.py \
             dist/github-contribution-mine.svg \
             dist/github-contribution-mine-dark.svg
 
-      - name: Publish contribution mine
+      - name: Publish contribution farm
         uses: crazy-max/ghaction-github-pages@v3.1.0
         with:
           target_branch: output
