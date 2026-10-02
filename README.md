@@ -21,7 +21,7 @@
 
 ## 🌙 About Me
 
-Software Engineering student at **HUFLIT** focused on backend and full-stack development.
+Software Engineering 
 
 I build applications around clear business logic, maintainable APIs, authentication and authorization, reliable data flows, database design, debugging, and practical software testing. I am especially interested in **ASP.NET Core**, **Node.js**, system architecture, and integrating AI into useful software products.
 
