@@ -4,7 +4,7 @@ import re
 import sys
 from pathlib import Path
 
-LOOP_MS = 36000
+LOOP_MS = 60000
 TRIP_COUNT = 12
 CANVAS_HEIGHT = 512
 
@@ -36,6 +36,34 @@ def fmt(value: float) -> str:
     return f"{value:.2f}".rstrip("0").rstrip(".")
 
 
+def select_commit_blocks(svg: str, count: int) -> list[tuple[str, float, float]]:
+    matches = re.findall(
+        r'<rect class="c (c[0-9a-z]+)" x="([0-9.]+)" y="([0-9.]+)"',
+        svg,
+    )
+    active: list[tuple[str, float, float]] = []
+    seen: set[str] = set()
+
+    for cls, x, y in matches:
+        if cls == "c0" or cls in seen:
+            continue
+        seen.add(cls)
+        active.append((cls, float(x), float(y)))
+
+    active.sort(key=lambda item: (item[1], item[2]))
+    if not active:
+        raise RuntimeError("No active contribution cells found")
+
+    if len(active) <= count:
+        return active
+
+    selected: list[tuple[str, float, float]] = []
+    for i in range(count):
+        index = round(i * (len(active) - 1) / (count - 1))
+        selected.append(active[index])
+    return selected
+
+
 def steven_markup() -> str:
     return (
         '<g id="steven" aria-hidden="true">'
@@ -54,6 +82,12 @@ def steven_markup() -> str:
         '<rect x="15" y="7" width="1" height="2" fill="#2563EB"/>'
         '<rect x="1" y="15" width="4" height="11" fill="#C98D62"/>'
         '<rect x="18" y="15" width="4" height="11" fill="#C98D62"/>'
+        '<g class="seed-pack-item">'
+        '<rect x="-11" y="14" width="13" height="14" fill="#A16207" stroke="#FDE68A" stroke-width="1"/>'
+        '<rect x="-9" y="16" width="9" height="4" fill="#65A30D"/>'
+        '<rect x="-7" y="21" width="2" height="2" fill="#FDE047"/>'
+        '<rect x="-3" y="23" width="2" height="2" fill="#EAB308"/>'
+        '</g>'
         '<g class="food carrot-item">'
         '<rect x="-7" y="18" width="8" height="11" fill="#F97316"/>'
         '<rect x="-7" y="15" width="3" height="4" fill="#22C55E"/>'
@@ -284,40 +318,70 @@ def herd_markup(kind: str, x: int, y: int, w: int, h: int) -> str:
     )
 
 
-def route_and_times() -> tuple[str, list[float], list[float], list[tuple[str, str, str]]]:
+
+def route_and_times(
+    commit_blocks: list[tuple[str, float, float]]
+) -> tuple[
+    str,
+    list[float],
+    list[float],
+    list[float],
+    list[float],
+    list[tuple[str, str, str]],
+]:
     start = 2.0
-    end = 90.0
-    span = (end - start) / TRIP_COUNT
+    end = 94.0
+    trip_count = len(commit_blocks)
+    span = (end - start) / trip_count
     hx, hy = HUB
+
     points: list[tuple[float, float, float]] = [(0.0, hx, hy), (start, hx, hy)]
-    pickup_times: list[float] = []
+    collect_times: list[float] = []
+    plant_times: list[float] = []
+    harvest_times: list[float] = []
     feed_times: list[float] = []
     assignments: list[tuple[str, str, str]] = []
 
-    for i in range(TRIP_COUNT):
+    for i, (_, bx, by) in enumerate(commit_blocks):
         animal, food, color = FOODS[i % len(FOODS)]
-        source_x, source_y = HARVEST_SPOTS[food]
+        plot_x, plot_y = HARVEST_SPOTS[food]
         target_x, target_y = FEED_SPOTS[animal]
         trip = start + i * span
 
-        arrive_source = trip + span * 0.24
-        pickup = trip + span * 0.38
-        arrive_target = trip + span * 0.66
-        feed = trip + span * 0.78
-        return_home = trip + span * 0.96
+        source_x = bx - 8
+        source_y = by - 26
+
+        arrive_commit = trip + span * 0.10
+        collect = trip + span * 0.17
+        arrive_plot_seed = trip + span * 0.34
+        plant = trip + span * 0.39
+        wait_home = trip + span * 0.51
+        arrive_plot_harvest = trip + span * 0.69
+        harvest = trip + span * 0.73
+        arrive_animal = trip + span * 0.85
+        feed = trip + span * 0.89
+        return_home = trip + span * 0.98
 
         points.extend([
-            (arrive_source, source_x, source_y),
-            (pickup, source_x, source_y),
-            (arrive_target, target_x, target_y),
+            (arrive_commit, source_x, source_y),
+            (collect, source_x, source_y),
+            (arrive_plot_seed, plot_x, plot_y),
+            (plant, plot_x, plot_y),
+            (wait_home, hx, hy),
+            (arrive_plot_harvest, plot_x, plot_y),
+            (harvest, plot_x, plot_y),
+            (arrive_animal, target_x, target_y),
             (feed, target_x, target_y),
             (return_home, hx, hy),
         ])
-        pickup_times.append(pickup)
+
+        collect_times.append(collect)
+        plant_times.append(plant)
+        harvest_times.append(harvest)
         feed_times.append(feed)
         assignments.append((animal, food, color))
 
-    points.extend([(96.0, hx, hy), (99.5, hx, hy), (100.0, hx, hy)])
+    points.extend([(97.0, hx, hy), (99.5, hx, hy), (100.0, hx, hy)])
 
     compact: dict[float, tuple[float, float]] = {}
     for p, x, y in points:
@@ -328,29 +392,36 @@ def route_and_times() -> tuple[str, list[float], list[float], list[tuple[str, st
         x, y = compact[p]
         frames.append(f"{fmt(p)}%{{transform:translate({fmt(x)}px,{fmt(y)}px)}}")
 
-    return "@keyframes stevenRoute{" + "".join(frames) + "}", pickup_times, feed_times, assignments
+    return (
+        "@keyframes stevenRoute{" + "".join(frames) + "}",
+        collect_times,
+        plant_times,
+        harvest_times,
+        feed_times,
+        assignments,
+    )
 
 
-def visibility_keyframes(
+def carry_keyframes(
     name: str,
-    pickup_times: list[float],
-    feed_times: list[float],
-    assignments: list[tuple[str, str, str]],
-    food_name: str,
+    start_times: list[float],
+    end_times: list[float],
+    assignments: list[tuple[str, str, str]] | None = None,
+    food_name: str | None = None,
 ) -> str:
     frames = ["0%{opacity:0}"]
-    for pickup, feed, (_, food, _) in zip(pickup_times, feed_times, assignments):
-        if food != food_name:
-            continue
+    for i, (start, end) in enumerate(zip(start_times, end_times)):
+        if assignments is not None and food_name is not None:
+            if assignments[i][1] != food_name:
+                continue
         frames.extend([
-            f"{fmt(pickup - .05)}%{{opacity:0}}",
-            f"{fmt(pickup)}%{{opacity:1}}",
-            f"{fmt(feed - .05)}%{{opacity:1}}",
-            f"{fmt(feed)}%{{opacity:0}}",
+            f"{fmt(start - .04)}%{{opacity:0}}",
+            f"{fmt(start)}%{{opacity:1}}",
+            f"{fmt(end - .04)}%{{opacity:1}}",
+            f"{fmt(end)}%{{opacity:0}}",
         ])
     frames.append("100%{opacity:0}")
     return f"@keyframes {name}" + "{" + "".join(frames) + "}"
-
 
 def reaction_keyframes(
     name: str,
@@ -390,40 +461,61 @@ def heart_keyframes(
     return f"@keyframes {name}" + "{" + "".join(frames) + "}"
 
 
+
 def crop_css(
     crop: str,
-    pickup_times: list[float],
+    plant_times: list[float],
+    harvest_times: list[float],
     assignments: list[tuple[str, str, str]],
 ) -> str:
-    matching = [p for p, (_, food, _) in zip(pickup_times, assignments) if food == crop]
-    if len(matching) < 2:
-        crop_ms = 11000
-    else:
-        delta_pct = matching[1] - matching[0]
-        crop_ms = round(LOOP_MS * delta_pct / 100)
+    events = [
+        (plant, harvest)
+        for plant, harvest, (_, food, _) in zip(
+            plant_times, harvest_times, assignments
+        )
+        if food == crop
+    ]
 
-    first_ms = LOOP_MS * matching[0] / 100
-    delay_ms = round(first_ms - crop_ms * 0.88)
+    grow_frames = ["0%{transform:scaleY(0);opacity:0}"]
+    ripe_frames = ["0%{opacity:.15}"]
+
+    for plant, harvest in events:
+        duration = max(harvest - plant, 0.5)
+        s1 = plant + duration * 0.18
+        s2 = plant + duration * 0.38
+        s3 = plant + duration * 0.62
+        ripe = plant + duration * 0.78
+
+        grow_frames.extend([
+            f"{fmt(plant - .04)}%{{transform:scaleY(0);opacity:0}}",
+            f"{fmt(plant)}%{{transform:scaleY(.18);opacity:1}}",
+            f"{fmt(s1)}%{{transform:scaleY(.38);opacity:1}}",
+            f"{fmt(s2)}%{{transform:scaleY(.6);opacity:1}}",
+            f"{fmt(s3)}%{{transform:scaleY(.82);opacity:1}}",
+            f"{fmt(ripe)}%{{transform:scaleY(1);opacity:1}}",
+            f"{fmt(harvest - .04)}%{{transform:scaleY(1);opacity:1}}",
+            f"{fmt(harvest)}%{{transform:scaleY(0);opacity:0}}",
+        ])
+        ripe_frames.extend([
+            f"{fmt(plant)}%{{opacity:.18}}",
+            f"{fmt(s2)}%{{opacity:.45}}",
+            f"{fmt(ripe)}%{{opacity:1}}",
+            f"{fmt(harvest - .04)}%{{opacity:1}}",
+            f"{fmt(harvest)}%{{opacity:.15}}",
+        ])
+
+    grow_frames.append("100%{transform:scaleY(0);opacity:0}")
+    ripe_frames.append("100%{opacity:.15}")
 
     return (
-        f".crop-{crop} .crop-sprout{{transform-box:fill-box;transform-origin:center bottom;"
-        f"animation:{crop}Grow {crop_ms}ms steps(4,end) infinite;"
-        f"animation-delay:{delay_ms}ms}}"
-        f".crop-{crop} .ripe-part{{animation:{crop}Ripe {crop_ms}ms steps(1,end) infinite;"
-        f"animation-delay:{delay_ms}ms}}"
-        f"@keyframes {crop}Grow{{"
-        "0%,12%{transform:scaleY(.22)}"
-        "32%{transform:scaleY(.45)}"
-        "55%{transform:scaleY(.7)}"
-        "72%,87%{transform:scaleY(1)}"
-        "88%,94%{transform:scaleY(.05)}"
-        "100%{transform:scaleY(.22)}}"
-        f"@keyframes {crop}Ripe{{"
-        "0%,54%{opacity:.3}"
-        "55%,87%{opacity:1}"
-        "88%,100%{opacity:.15}}}"
+        f".crop-{crop} .crop-sprout{{transform-box:fill-box;"
+        "transform-origin:center bottom;"
+        f"animation:{crop}Grow {LOOP_MS}ms steps(1,end) infinite}}"
+        f".crop-{crop} .ripe-part{{"
+        f"animation:{crop}Ripe {LOOP_MS}ms steps(1,end) infinite}}"
+        f"@keyframes {crop}Grow" + "{" + "".join(grow_frames) + "}"
+        f"@keyframes {crop}Ripe" + "{" + "".join(ripe_frames) + "}"
     )
-
 
 def world_markup(bg: str, text: str) -> str:
     return (
@@ -464,7 +556,8 @@ def minecraftify(path: Path) -> None:
         count=1,
     )
 
-    route_css, pickup_times, feed_times, assignments = route_and_times()
+    commit_blocks = select_commit_blocks(svg, TRIP_COUNT)
+    route_css, collect_times, plant_times, harvest_times, feed_times, assignments = route_and_times(commit_blocks)
 
     is_dark = "dark" in path.name
     world_bg = "#0F172A" if is_dark else "#DCFCE7"
@@ -480,23 +573,37 @@ def minecraftify(path: Path) -> None:
         ".steven-body{animation:stevenBob 430ms steps(2,end) infinite}",
         "@keyframes stevenBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}",
         route_css,
+        f".seed-pack-item{{opacity:0;animation:seedPackCarry {LOOP_MS}ms steps(1,end) infinite}}",
+        carry_keyframes("seedPackCarry", collect_times, plant_times),
         f".carrot-item{{opacity:0;animation:carrotCarry {LOOP_MS}ms steps(1,end) infinite}}",
         f".wheat-item{{opacity:0;animation:wheatCarry {LOOP_MS}ms steps(1,end) infinite}}",
         f".grass-item{{opacity:0;animation:grassCarry {LOOP_MS}ms steps(1,end) infinite}}",
         f".seeds-item{{opacity:0;animation:seedsCarry {LOOP_MS}ms steps(1,end) infinite}}",
-        visibility_keyframes("carrotCarry", pickup_times, feed_times, assignments, "carrot"),
-        visibility_keyframes("wheatCarry", pickup_times, feed_times, assignments, "wheat"),
-        visibility_keyframes("grassCarry", pickup_times, feed_times, assignments, "grass"),
-        visibility_keyframes("seedsCarry", pickup_times, feed_times, assignments, "seeds"),
-        crop_css("carrot", pickup_times, assignments),
-        crop_css("wheat", pickup_times, assignments),
-        crop_css("grass", pickup_times, assignments),
-        crop_css("seeds", pickup_times, assignments),
+        carry_keyframes("carrotCarry", harvest_times, feed_times, assignments, "carrot"),
+        carry_keyframes("wheatCarry", harvest_times, feed_times, assignments, "wheat"),
+        carry_keyframes("grassCarry", harvest_times, feed_times, assignments, "grass"),
+        carry_keyframes("seedsCarry", harvest_times, feed_times, assignments, "seeds"),
+        crop_css("carrot", plant_times, harvest_times, assignments),
+        crop_css("wheat", plant_times, harvest_times, assignments),
+        crop_css("grass", plant_times, harvest_times, assignments),
+        crop_css("seeds", plant_times, harvest_times, assignments),
         ".wander-a{animation:animalWalkA 5400ms steps(7,end) infinite;animation-delay:-900ms}",
         ".wander-b{animation:animalWalkB 6700ms steps(8,end) infinite;animation-delay:-2800ms}",
         "@keyframes animalWalkA{0%,100%{transform:translate(0,0)}15%{transform:translate(5px,0)}30%{transform:translate(8px,-2px)}45%{transform:translate(3px,0)}60%{transform:translate(-5px,0)}76%{transform:translate(-8px,-1px)}90%{transform:translate(-2px,0)}}",
         "@keyframes animalWalkB{0%,100%{transform:translate(0,0)}14%{transform:translate(-4px,0)}28%{transform:translate(-7px,-1px)}42%{transform:translate(-2px,0)}58%{transform:translate(5px,0)}74%{transform:translate(7px,-2px)}89%{transform:translate(2px,0)}}",
     ]
+
+    for i, ((cls, _, _), collect) in enumerate(zip(commit_blocks, collect_times)):
+        css.append(
+            f".c.{cls}{{transform-box:fill-box;transform-origin:center;"
+            f"animation:commitSeed{i} {LOOP_MS}ms steps(1,end) infinite!important}}"
+            f"@keyframes commitSeed{i}{{"
+            f"0%,{fmt(collect - .18)}%{{opacity:1;transform:scale(1)}}"
+            f"{fmt(collect - .08)}%{{opacity:1;transform:scale(1.28)}}"
+            f"{fmt(collect)}%,99.5%{{opacity:0;transform:scale(.2)}}"
+            f"100%{{opacity:1;transform:scale(1)}}"
+            f"}}"
+        )
 
     for animal in ("pig", "cow", "sheep", "chicken"):
         css.append(
@@ -535,7 +642,7 @@ def minecraftify(path: Path) -> None:
         + '<rect class="xp-fill" x="25" y="453" width="165" height="8" fill="#84CC16"/>'
         + f'<text x="198" y="461" font-family="monospace" font-size="10" font-weight="900" fill="{hud_text}">XP</text>'
         + f'<text x="238" y="461" font-family="monospace" font-size="9" font-weight="800" fill="{hud_text}">'
-          'CARROT→PIG  |  WHEAT→COW  |  GRASS→SHEEP  |  SEEDS→CHICKEN</text>'
+          'COMMITS→SEEDS/FERTILIZER→GROW→HARVEST→FEED</text>'
         + '</g>'
         + '<g class="all-hearts">'
           '<text x="575" y="151" font-size="16" fill="#FB7185">♥</text>'
@@ -544,7 +651,7 @@ def minecraftify(path: Path) -> None:
           '<text x="735" y="289" font-size="18" fill="#F472B6">♥</text>'
         + '</g>'
         + '<text class="farm-complete" x="436" y="438" text-anchor="middle" font-size="14" fill="#A3E635">'
-          'FARM DAY COMPLETE +XP</text>'
+          'COMMITS GREW THE FARM +XP</text>'
         + '</g>'
     )
 
@@ -557,7 +664,7 @@ def minecraftify(path: Path) -> None:
 
     print(
         f"Added Minecraft-style farm world to {path}: "
-        "12 harvest/feed trips, 4 crops, 4 animal pens"
+        "12 commit->plant->grow->harvest->feed trips, 4 crops, 4 animal pens"
     )
 
 
