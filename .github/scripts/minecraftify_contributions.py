@@ -220,39 +220,38 @@ def plot_markup(plot_id: str, label: str, x: int, y: int, crop: str) -> str:
 def crop_sprite(crop: str, x: int, y: int) -> str:
     if crop == "carrot":
         return (
-            f'<g class="crop-sprout" transform="translate({x},{y})">'
+            f'<g transform="translate({x},{y})"><g class="crop-sprout">'
             '<rect class="crop-stem" x="3" y="-10" width="3" height="10" fill="#16A34A"/>'
             '<rect class="crop-stem" x="7" y="-8" width="3" height="8" fill="#22C55E"/>'
             '<rect class="ripe-part" x="4" y="0" width="5" height="10" fill="#F97316"/>'
-            '</g>'
+            '</g></g>'
         )
     if crop == "wheat":
         return (
-            f'<g class="crop-sprout" transform="translate({x},{y})">'
+            f'<g transform="translate({x},{y})"><g class="crop-sprout">'
             '<rect x="5" y="-17" width="2" height="17" fill="#A16207"/>'
             '<rect class="ripe-part" x="1" y="-17" width="5" height="4" fill="#FACC15"/>'
             '<rect class="ripe-part" x="6" y="-14" width="5" height="4" fill="#FDE047"/>'
             '<rect class="ripe-part" x="1" y="-10" width="5" height="4" fill="#EAB308"/>'
-            '</g>'
+            '</g></g>'
         )
     if crop == "grass":
         return (
-            f'<g class="crop-sprout" transform="translate({x},{y})">'
+            f'<g transform="translate({x},{y})"><g class="crop-sprout">'
             '<rect x="1" y="-12" width="3" height="12" fill="#4D7C0F"/>'
             '<rect x="6" y="-17" width="3" height="17" fill="#65A30D"/>'
             '<rect x="10" y="-10" width="3" height="10" fill="#84CC16"/>'
             '<rect class="ripe-part" x="3" y="-18" width="3" height="5" fill="#A3E635"/>'
-            '</g>'
+            '</g></g>'
         )
     return (
-        f'<g class="crop-sprout" transform="translate({x},{y})">'
+        f'<g transform="translate({x},{y})"><g class="crop-sprout">'
         '<rect x="5" y="-15" width="2" height="15" fill="#65A30D"/>'
         '<rect class="ripe-part" x="1" y="-16" width="4" height="4" fill="#FACC15"/>'
         '<rect class="ripe-part" x="7" y="-13" width="4" height="4" fill="#EAB308"/>'
         '<rect class="ripe-part" x="2" y="-9" width="4" height="4" fill="#FDE047"/>'
-        '</g>'
+        '</g></g>'
     )
-
 
 def herd_markup(kind: str, x: int, y: int, w: int, h: int) -> str:
     sprite = {
@@ -532,10 +531,10 @@ def minecraftify(path: Path) -> None:
         + world_markup(world_bg, world_text)
         + '<g class="steven-route">' + steven_markup() + '</g>'
         + '<g id="farm-hud" aria-hidden="true">'
-        + f'<rect x="18" y="472" width="826" height="22" fill="{hud_bg}" stroke="#57534E" stroke-width="2"/>'
-        + '<rect class="xp-fill" x="25" y="479" width="165" height="8" fill="#84CC16"/>'
-        + f'<text x="198" y="487" font-family="monospace" font-size="10" font-weight="900" fill="{hud_text}">XP</text>'
-        + f'<text x="238" y="487" font-family="monospace" font-size="9" font-weight="800" fill="{hud_text}">'
+        + f'<rect x="18" y="446" width="826" height="22" fill="{hud_bg}" stroke="#57534E" stroke-width="2"/>'
+        + '<rect class="xp-fill" x="25" y="453" width="165" height="8" fill="#84CC16"/>'
+        + f'<text x="198" y="461" font-family="monospace" font-size="10" font-weight="900" fill="{hud_text}">XP</text>'
+        + f'<text x="238" y="461" font-family="monospace" font-size="9" font-weight="800" fill="{hud_text}">'
           'CARROT→PIG  |  WHEAT→COW  |  GRASS→SHEEP  |  SEEDS→CHICKEN</text>'
         + '</g>'
         + '<g class="all-hearts">'
@@ -544,7 +543,7 @@ def minecraftify(path: Path) -> None:
           '<text x="575" y="289" font-size="16" fill="#FB7185">♥</text>'
           '<text x="735" y="289" font-size="18" fill="#F472B6">♥</text>'
         + '</g>'
-        + '<text class="farm-complete" x="436" y="455" text-anchor="middle" font-size="14" fill="#A3E635">'
+        + '<text class="farm-complete" x="436" y="438" text-anchor="middle" font-size="14" fill="#A3E635">'
           'FARM DAY COMPLETE +XP</text>'
         + '</g>'
     )
