@@ -4,7 +4,7 @@ import re
 import sys
 from pathlib import Path
 
-LOOP_MS = 60000
+LOOP_MS = 120000
 TRIP_COUNT = 12
 CANVAS_HEIGHT = 512
 
@@ -351,27 +351,47 @@ def route_and_times(
         source_x = bx - 8
         source_y = by - 26
 
-        arrive_commit = trip + span * 0.10
-        collect = trip + span * 0.17
-        arrive_plot_seed = trip + span * 0.34
-        plant = trip + span * 0.39
-        wait_home = trip + span * 0.51
-        arrive_plot_harvest = trip + span * 0.69
-        harvest = trip + span * 0.73
-        arrive_animal = trip + span * 0.85
-        feed = trip + span * 0.89
-        return_home = trip + span * 0.98
+        arrive_commit = trip + span * 0.15
+        inspect_commit = trip + span * 0.19
+        collect = trip + span * 0.22
+        leave_commit = trip + span * 0.25
+
+        arrive_plot_seed = trip + span * 0.40
+        plant = trip + span * 0.44
+        finish_plant = trip + span * 0.48
+
+        arrive_home = trip + span * 0.56
+        wait_home = trip + span * 0.65
+
+        arrive_plot_harvest = trip + span * 0.75
+        harvest = trip + span * 0.79
+        finish_harvest = trip + span * 0.82
+
+        arrive_animal = trip + span * 0.88
+        feed = trip + span * 0.91
+        finish_feed = trip + span * 0.94
+        return_home = trip + span * 0.995
 
         points.extend([
             (arrive_commit, source_x, source_y),
+            (inspect_commit, source_x, source_y),
             (collect, source_x, source_y),
+            (leave_commit, source_x, source_y),
+
             (arrive_plot_seed, plot_x, plot_y),
             (plant, plot_x, plot_y),
+            (finish_plant, plot_x, plot_y),
+
+            (arrive_home, hx, hy),
             (wait_home, hx, hy),
+
             (arrive_plot_harvest, plot_x, plot_y),
             (harvest, plot_x, plot_y),
+            (finish_harvest, plot_x, plot_y),
+
             (arrive_animal, target_x, target_y),
             (feed, target_x, target_y),
+            (finish_feed, target_x, target_y),
             (return_home, hx, hy),
         ])
 
