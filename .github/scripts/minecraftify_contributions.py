@@ -4,7 +4,7 @@ import re
 import sys
 from pathlib import Path
 
-LOOP_MS = 120000
+LOOP_MS = 150000
 TRIP_COUNT = 12
 CANVAS_HEIGHT = 512
 
@@ -287,6 +287,7 @@ def crop_sprite(crop: str, x: int, y: int) -> str:
         '</g></g>'
     )
 
+
 def herd_markup(kind: str, x: int, y: int, w: int, h: int) -> str:
     sprite = {
         "pig": pig_markup,
@@ -300,6 +301,7 @@ def herd_markup(kind: str, x: int, y: int, w: int, h: int) -> str:
         "sheep": "SHEEP",
         "chicken": "CHICKENS",
     }[kind]
+
     return (
         f'<g id="{kind}-pen">'
         + fence_box(x, y, w, h)
@@ -307,16 +309,23 @@ def herd_markup(kind: str, x: int, y: int, w: int, h: int) -> str:
         + f'<text x="{x+w/2}" y="{y-6}" text-anchor="middle" font-family="monospace" '
           f'font-size="9" font-weight="900" fill="#FDE68A">{sign}</text>'
         + f'<g class="{kind}-herd">'
-        + f'<g transform="translate({x+18},{y+36}) scale(.82)">{sprite("wander-a")}</g>'
-        + f'<g transform="translate({x+70},{y+66}) scale(.68)">{sprite("wander-b")}</g>'
+        + f'<g transform="translate({x+17},{y+36}) scale(.82)">'
+          f'<g class="{kind}-parent-a">{sprite("wander-a")}</g></g>'
+        + f'<g transform="translate({x+76},{y+64}) scale(.70)">'
+          f'<g class="{kind}-parent-b">{sprite("wander-b")}</g></g>'
+        + f'<g transform="translate({x+52},{y+67}) scale(.58)">'
+          f'<g class="{kind}-baby">{sprite("")}</g></g>'
         + '</g>'
+        + f'<g class="{kind}-heart-a"><text x="{x+39}" y="{y+27}" text-anchor="middle" '
+          f'font-size="14" fill="#FB7185">♥</text></g>'
+        + f'<g class="{kind}-heart-b"><text x="{x+96}" y="{y+55}" text-anchor="middle" '
+          f'font-size="14" fill="#FB7185">♥</text></g>'
+        + f'<g class="{kind}-breed-heart"><text x="{x+w/2}" y="{y+42}" text-anchor="middle" '
+          f'font-size="20" fill="#F472B6">♥</text></g>'
         + f'<rect x="{x+12}" y="{y+h-20}" width="42" height="10" fill="#78350F"/>'
         + f'<rect x="{x+14}" y="{y+h-18}" width="38" height="4" fill="#A16207"/>'
-        + f'<g class="{kind}-heart"><text x="{x+w/2}" y="{y+24}" text-anchor="middle" '
-          f'font-size="18" fill="#FB7185">♥</text></g>'
         + '</g>'
     )
-
 
 
 def route_and_times(
@@ -328,99 +337,190 @@ def route_and_times(
     list[float],
     list[float],
     list[tuple[str, str, str]],
+    list[tuple[str, float, float]],
 ]:
-    start = 2.0
-    end = 94.0
-    trip_count = len(commit_blocks)
-    span = (end - start) / trip_count
-    hx, hy = HUB
+    def dist(a: tuple[float, float], b: tuple[float, float]) -> float:
+        return ((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2) ** 0.5
 
-    points: list[tuple[float, float, float]] = [(0.0, hx, hy), (start, hx, hy)]
-    collect_times: list[float] = []
-    plant_times: list[float] = []
-    harvest_times: list[float] = []
-    feed_times: list[float] = []
-    assignments: list[tuple[str, str, str]] = []
+    current = HUB
+    unit = 0.0
+    route: list[tuple[float, float, float]] = [(unit, current[0], current[1])]
 
-    for i, (_, bx, by) in enumerate(commit_blocks):
-        animal, food, color = FOODS[i % len(FOODS)]
-        plot_x, plot_y = HARVEST_SPOTS[food]
-        target_x, target_y = FEED_SPOTS[animal]
-        trip = start + i * span
+    collect_units: list[float] = []
+    plant_units: list[float] = []
+    harvest_units: list[float] = []
+    feed_units: list[float] = []
+    feed_assignments: list[tuple[str, str, str]] = []
+    crop_events_raw: list[dict[str, object]] = []
 
-        source_x = bx - 8
-        source_y = by - 26
+    remaining = list(commit_blocks)
+    plot_state: dict[str, dict[str, object] | None] = {
+        "carrot": None,
+        "wheat": None,
+        "grass": None,
+        "seeds": None,
+    }
+    crop_cycle = ["carrot", "wheat", "grass", "seeds"]
+    crop_meta = {
+        food: (animal, color)
+        for animal, food, color in FOODS
+    }
 
-        arrive_commit = trip + span * 0.15
-        inspect_commit = trip + span * 0.19
-        collect = trip + span * 0.22
-        leave_commit = trip + span * 0.25
+    def arrive(pos: tuple[float, float], pause: float = 0.0) -> None:
+        nonlocal current, unit
+        travel = max(dist(current, pos) / 110.0, 0.35)
+        unit += travel
+        current = pos
+        route.append((unit, current[0], current[1]))
+        if pause:
+            unit += pause
+            route.append((unit, current[0], current[1]))
 
-        arrive_plot_seed = trip + span * 0.40
-        plant = trip + span * 0.44
-        finish_plant = trip + span * 0.48
+    def harvest_plot(food: str) -> None:
+        nonlocal unit, current
+        record = plot_state[food]
+        if record is None:
+            return
+        animal, color = crop_meta[food]
+        plot = HARVEST_SPOTS[food]
+        arrive(plot, 0.34)
+        harvest_u = unit
+        arrive(FEED_SPOTS[animal], 0.40)
+        feed_u = unit
 
-        arrive_home = trip + span * 0.56
-        wait_home = trip + span * 0.65
+        record["harvest_u"] = harvest_u
+        crop_events_raw.append(record)
+        harvest_units.append(harvest_u)
+        feed_units.append(feed_u)
+        feed_assignments.append((animal, food, color))
+        plot_state[food] = None
 
-        arrive_plot_harvest = trip + span * 0.75
-        harvest = trip + span * 0.79
-        finish_harvest = trip + span * 0.82
+    for step in range(len(commit_blocks)):
+        # If every field is occupied, clear a mature field before collecting
+        # another seed. This avoids carrying a seed with nowhere sensible to plant.
+        occupied = [food for food, rec in plot_state.items() if rec is not None]
+        if len(occupied) == len(plot_state):
+            mature = [
+                food for food in occupied
+                if unit >= float(plot_state[food]["mature_u"])
+            ]
+            if not mature:
+                mature = sorted(
+                    occupied,
+                    key=lambda food: float(plot_state[food]["mature_u"])
+                )[:1]
+            food = min(mature, key=lambda f: dist(current, HARVEST_SPOTS[f]))
+            harvest_plot(food)
 
-        arrive_animal = trip + span * 0.88
-        feed = trip + span * 0.91
-        finish_feed = trip + span * 0.94
-        return_home = trip + span * 0.995
+        # Pick the nearest remaining contribution cell instead of following
+        # a fixed left-to-right order.
+        cls, bx, by = min(
+            remaining,
+            key=lambda item: dist(current, (item[1] - 8, item[2] - 26)),
+        )
+        remaining.remove((cls, bx, by))
+        commit_pos = (bx - 8, by - 26)
+        arrive(commit_pos, 0.26)
+        collect_u = unit
+        collect_units.append(collect_u)
 
-        points.extend([
-            (arrive_commit, source_x, source_y),
-            (inspect_commit, source_x, source_y),
-            (collect, source_x, source_y),
-            (leave_commit, source_x, source_y),
+        empty = [food for food, rec in plot_state.items() if rec is None]
+        preferred = crop_cycle[step % len(crop_cycle)]
+        if preferred in empty:
+            food = preferred
+        else:
+            food = min(empty, key=lambda f: dist(current, HARVEST_SPOTS[f]))
 
-            (arrive_plot_seed, plot_x, plot_y),
-            (plant, plot_x, plot_y),
-            (finish_plant, plot_x, plot_y),
+        plot = HARVEST_SPOTS[food]
+        arrive(plot, 0.34)
+        plant_u = unit
+        plant_units.append(plant_u)
 
-            (arrive_home, hx, hy),
-            (wait_home, hx, hy),
+        # Crop ripens while Steven keeps working elsewhere.
+        plot_state[food] = {
+            "food": food,
+            "plant_u": plant_u,
+            "mature_u": plant_u + 3.9,
+            "harvest_u": None,
+        }
 
-            (arrive_plot_harvest, plot_x, plot_y),
-            (harvest, plot_x, plot_y),
-            (finish_harvest, plot_x, plot_y),
+        # Opportunistic task switching:
+        # if a ripe field creates only a small detour toward the next commit,
+        # harvest it now; otherwise continue collecting/planting.
+        if remaining:
+            next_commit = min(
+                remaining,
+                key=lambda item: dist(current, (item[1] - 8, item[2] - 26)),
+            )
+            next_pos = (next_commit[1] - 8, next_commit[2] - 26)
+            mature = [
+                f for f, rec in plot_state.items()
+                if rec is not None and unit >= float(rec["mature_u"])
+            ]
+            if mature:
+                ranked = []
+                direct = dist(current, next_pos)
+                for f in mature:
+                    p = HARVEST_SPOTS[f]
+                    detour = dist(current, p) + dist(p, next_pos) - direct
+                    ranked.append((detour, f))
+                detour, candidate = min(ranked)
+                if detour <= 175:
+                    harvest_plot(candidate)
 
-            (arrive_animal, target_x, target_y),
-            (feed, target_x, target_y),
-            (finish_feed, target_x, target_y),
-            (return_home, hx, hy),
-        ])
+    # Finish crops already planted; choose nearest mature task first.
+    while any(rec is not None for rec in plot_state.values()):
+        available = [
+            food for food, rec in plot_state.items()
+            if rec is not None and unit >= float(rec["mature_u"])
+        ]
+        if not available:
+            food = min(
+                (f for f, rec in plot_state.items() if rec is not None),
+                key=lambda f: float(plot_state[f]["mature_u"]),
+            )
+            # No barn waiting: walk to that field and let the remaining growth
+            # happen while Steven is already at the work area.
+            arrive(HARVEST_SPOTS[food], 0.55)
+            if unit < float(plot_state[food]["mature_u"]):
+                unit = float(plot_state[food]["mature_u"])
+                route.append((unit, current[0], current[1]))
+            harvest_plot(food)
+        else:
+            food = min(available, key=lambda f: dist(current, HARVEST_SPOTS[f]))
+            harvest_plot(food)
 
-        collect_times.append(collect)
-        plant_times.append(plant)
-        harvest_times.append(harvest)
-        feed_times.append(feed)
-        assignments.append((animal, food, color))
+    arrive(HUB, 0.25)
 
-    points.extend([(97.0, hx, hy), (99.5, hx, hy), (100.0, hx, hy)])
-
-    compact: dict[float, tuple[float, float]] = {}
-    for p, x, y in points:
-        compact[round(p, 2)] = (x, y)
+    total = max(unit, 1.0)
+    def pct(u: float) -> float:
+        return 2.0 + (u / total) * 96.0
 
     frames = []
-    for p in sorted(compact):
-        x, y = compact[p]
-        frames.append(f"{fmt(p)}%{{transform:translate({fmt(x)}px,{fmt(y)}px)}}")
+    for u, x, y in route:
+        frames.append(
+            f"{fmt(pct(u))}%{{transform:translate({fmt(x)}px,{fmt(y)}px)}}"
+        )
+    frames.append(f"100%{{transform:translate({fmt(HUB[0])}px,{fmt(HUB[1])}px)}}")
+
+    crop_events = [
+        (
+            str(record["food"]),
+            pct(float(record["plant_u"])),
+            pct(float(record["harvest_u"])),
+        )
+        for record in crop_events_raw
+    ]
 
     return (
         "@keyframes stevenRoute{" + "".join(frames) + "}",
-        collect_times,
-        plant_times,
-        harvest_times,
-        feed_times,
-        assignments,
+        [pct(v) for v in collect_units],
+        [pct(v) for v in plant_units],
+        [pct(v) for v in harvest_units],
+        [pct(v) for v in feed_units],
+        feed_assignments,
+        crop_events,
     )
-
 
 def carry_keyframes(
     name: str,
@@ -482,50 +582,47 @@ def heart_keyframes(
 
 
 
+
 def crop_css(
     crop: str,
-    plant_times: list[float],
-    harvest_times: list[float],
-    assignments: list[tuple[str, str, str]],
+    crop_events: list[tuple[str, float, float]],
 ) -> str:
     events = [
         (plant, harvest)
-        for plant, harvest, (_, food, _) in zip(
-            plant_times, harvest_times, assignments
-        )
+        for food, plant, harvest in crop_events
         if food == crop
     ]
 
     grow_frames = ["0%{transform:scaleY(0);opacity:0}"]
-    ripe_frames = ["0%{opacity:.15}"]
+    ripe_frames = ["0%{opacity:.12}"]
 
     for plant, harvest in events:
-        duration = max(harvest - plant, 0.5)
+        duration = max(harvest - plant, 0.6)
         s1 = plant + duration * 0.18
-        s2 = plant + duration * 0.38
-        s3 = plant + duration * 0.62
-        ripe = plant + duration * 0.78
+        s2 = plant + duration * 0.42
+        s3 = plant + duration * 0.68
+        ripe = plant + duration * 0.82
 
         grow_frames.extend([
-            f"{fmt(plant - .04)}%{{transform:scaleY(0);opacity:0}}",
+            f"{fmt(plant - .03)}%{{transform:scaleY(0);opacity:0}}",
             f"{fmt(plant)}%{{transform:scaleY(.18);opacity:1}}",
             f"{fmt(s1)}%{{transform:scaleY(.38);opacity:1}}",
-            f"{fmt(s2)}%{{transform:scaleY(.6);opacity:1}}",
-            f"{fmt(s3)}%{{transform:scaleY(.82);opacity:1}}",
+            f"{fmt(s2)}%{{transform:scaleY(.62);opacity:1}}",
+            f"{fmt(s3)}%{{transform:scaleY(.84);opacity:1}}",
             f"{fmt(ripe)}%{{transform:scaleY(1);opacity:1}}",
-            f"{fmt(harvest - .04)}%{{transform:scaleY(1);opacity:1}}",
+            f"{fmt(harvest - .03)}%{{transform:scaleY(1);opacity:1}}",
             f"{fmt(harvest)}%{{transform:scaleY(0);opacity:0}}",
         ])
         ripe_frames.extend([
-            f"{fmt(plant)}%{{opacity:.18}}",
-            f"{fmt(s2)}%{{opacity:.45}}",
+            f"{fmt(plant)}%{{opacity:.15}}",
+            f"{fmt(s2)}%{{opacity:.4}}",
             f"{fmt(ripe)}%{{opacity:1}}",
-            f"{fmt(harvest - .04)}%{{opacity:1}}",
-            f"{fmt(harvest)}%{{opacity:.15}}",
+            f"{fmt(harvest - .03)}%{{opacity:1}}",
+            f"{fmt(harvest)}%{{opacity:.12}}",
         ])
 
     grow_frames.append("100%{transform:scaleY(0);opacity:0}")
-    ripe_frames.append("100%{opacity:.15}")
+    ripe_frames.append("100%{opacity:.12}")
 
     return (
         f".crop-{crop} .crop-sprout{{transform-box:fill-box;"
@@ -535,6 +632,87 @@ def crop_css(
         f"animation:{crop}Ripe {LOOP_MS}ms steps(1,end) infinite}}"
         f"@keyframes {crop}Grow" + "{" + "".join(grow_frames) + "}"
         f"@keyframes {crop}Ripe" + "{" + "".join(ripe_frames) + "}"
+    )
+
+
+def breeding_css(
+    animal: str,
+    feed_times: list[float],
+    assignments: list[tuple[str, str, str]],
+) -> str:
+    times = [
+        feed
+        for feed, (kind, _, _) in zip(feed_times, assignments)
+        if kind == animal
+    ]
+
+    if not times:
+        return ""
+
+    first = times[0]
+    second = times[1] if len(times) > 1 else None
+    third = times[2] if len(times) > 2 else None
+
+    if second is None:
+        return (
+            f".{animal}-heart-a{{opacity:0;animation:{animal}HeartA {LOOP_MS}ms steps(1,end) infinite}}"
+            f"@keyframes {animal}HeartA{{0%,{fmt(first-.03)}%{{opacity:0}}"
+            f"{fmt(first)}%,99.5%{{opacity:1}}100%{{opacity:0}}}}"
+        )
+
+    breed = min(second + 0.45, 94.0)
+    settle = min(breed + 1.8, 96.0)
+    baby_start = min(breed + 0.6, 95.0)
+    baby_mid = min(baby_start + 2.4, 97.0)
+    baby_grown = min(baby_start + 5.2, 98.5)
+
+    a_extra = ""
+    if third is not None and third > baby_grown:
+        a_extra = (
+            f"{fmt(third-.03)}%{{opacity:0}}"
+            f"{fmt(third)}%,99.5%{{opacity:1}}"
+        )
+
+    return (
+        f".{animal}-parent-a{{transform-box:fill-box;transform-origin:center bottom;"
+        f"animation:{animal}ParentA {LOOP_MS}ms steps(6,end) infinite}}"
+        f".{animal}-parent-b{{transform-box:fill-box;transform-origin:center bottom;"
+        f"animation:{animal}ParentB {LOOP_MS}ms steps(6,end) infinite}}"
+        f"@keyframes {animal}ParentA{{"
+        f"0%,{fmt(breed-.15)}%{{transform:translateX(0)}}"
+        f"{fmt(breed+.45)}%,{fmt(breed+1.15)}%{{transform:translateX(12px)}}"
+        f"{fmt(settle)}%,100%{{transform:translateX(0)}}}}"
+        f"@keyframes {animal}ParentB{{"
+        f"0%,{fmt(breed-.15)}%{{transform:translateX(0)}}"
+        f"{fmt(breed+.45)}%,{fmt(breed+1.15)}%{{transform:translateX(-12px)}}"
+        f"{fmt(settle)}%,100%{{transform:translateX(0)}}}}"
+
+        f".{animal}-heart-a{{opacity:0;animation:{animal}HeartA {LOOP_MS}ms steps(1,end) infinite}}"
+        f".{animal}-heart-b{{opacity:0;animation:{animal}HeartB {LOOP_MS}ms steps(1,end) infinite}}"
+        f".{animal}-breed-heart{{opacity:0;animation:{animal}BreedHeart {LOOP_MS}ms steps(4,end) infinite}}"
+        f"@keyframes {animal}HeartA{{"
+        f"0%,{fmt(first-.03)}%{{opacity:0}}"
+        f"{fmt(first)}%,{fmt(breed+1.2)}%{{opacity:1}}"
+        f"{fmt(breed+1.5)}%{{opacity:0}}"
+        + a_extra +
+        f"100%{{opacity:0}}}}"
+        f"@keyframes {animal}HeartB{{"
+        f"0%,{fmt(second-.03)}%{{opacity:0}}"
+        f"{fmt(second)}%,{fmt(breed+1.2)}%{{opacity:1}}"
+        f"{fmt(breed+1.5)}%,100%{{opacity:0}}}}"
+        f"@keyframes {animal}BreedHeart{{"
+        f"0%,{fmt(breed-.05)}%{{opacity:0;transform:translateY(4px) scale(.7)}}"
+        f"{fmt(breed+.3)}%,{fmt(breed+1.1)}%{{opacity:1;transform:translateY(-3px) scale(1.15)}}"
+        f"{fmt(breed+1.5)}%,100%{{opacity:0;transform:translateY(-8px) scale(1.3)}}}}"
+
+        f".{animal}-baby{{opacity:0;transform-box:fill-box;transform-origin:center bottom;"
+        f"animation:{animal}BabyGrow {LOOP_MS}ms steps(7,end) infinite}}"
+        f"@keyframes {animal}BabyGrow{{"
+        f"0%,{fmt(baby_start-.03)}%{{opacity:0;transform:scale(.2)}}"
+        f"{fmt(baby_start)}%{{opacity:1;transform:scale(.32)}}"
+        f"{fmt(baby_mid)}%{{opacity:1;transform:scale(.62)}}"
+        f"{fmt(baby_grown)}%,99.5%{{opacity:1;transform:scale(1)}}"
+        f"100%{{opacity:0;transform:scale(.2)}}}}"
     )
 
 def world_markup(bg: str, text: str) -> str:
@@ -577,7 +755,15 @@ def minecraftify(path: Path) -> None:
     )
 
     commit_blocks = select_commit_blocks(svg, TRIP_COUNT)
-    route_css, collect_times, plant_times, harvest_times, feed_times, assignments = route_and_times(commit_blocks)
+    (
+        route_css,
+        collect_times,
+        plant_times,
+        harvest_times,
+        feed_times,
+        assignments,
+        crop_events,
+    ) = route_and_times(commit_blocks)
 
     is_dark = "dark" in path.name
     world_bg = "#0F172A" if is_dark else "#DCFCE7"
@@ -603,10 +789,10 @@ def minecraftify(path: Path) -> None:
         carry_keyframes("wheatCarry", harvest_times, feed_times, assignments, "wheat"),
         carry_keyframes("grassCarry", harvest_times, feed_times, assignments, "grass"),
         carry_keyframes("seedsCarry", harvest_times, feed_times, assignments, "seeds"),
-        crop_css("carrot", plant_times, harvest_times, assignments),
-        crop_css("wheat", plant_times, harvest_times, assignments),
-        crop_css("grass", plant_times, harvest_times, assignments),
-        crop_css("seeds", plant_times, harvest_times, assignments),
+        crop_css("carrot", crop_events),
+        crop_css("wheat", crop_events),
+        crop_css("grass", crop_events),
+        crop_css("seeds", crop_events),
         ".wander-a{animation:animalWalkA 5400ms steps(7,end) infinite;animation-delay:-900ms}",
         ".wander-b{animation:animalWalkB 6700ms steps(8,end) infinite;animation-delay:-2800ms}",
         "@keyframes animalWalkA{0%,100%{transform:translate(0,0)}15%{transform:translate(5px,0)}30%{transform:translate(8px,-2px)}45%{transform:translate(3px,0)}60%{transform:translate(-5px,0)}76%{transform:translate(-8px,-1px)}90%{transform:translate(-2px,0)}}",
@@ -631,11 +817,7 @@ def minecraftify(path: Path) -> None:
             f"animation:{animal}React {LOOP_MS}ms steps(5,end) infinite}}"
         )
         css.append(reaction_keyframes(f"{animal}React", feed_times, assignments, animal))
-        css.append(
-            f".{animal}-heart{{opacity:0;"
-            f"animation:{animal}Heart {LOOP_MS}ms steps(5,end) infinite}}"
-        )
-        css.append(heart_keyframes(f"{animal}Heart", feed_times, assignments, animal))
+        css.append(breeding_css(animal, feed_times, assignments))
 
     css.extend([
         f".farm-complete{{opacity:0;font-family:monospace;font-weight:900;letter-spacing:1.2px;"
@@ -662,7 +844,7 @@ def minecraftify(path: Path) -> None:
         + '<rect class="xp-fill" x="25" y="453" width="165" height="8" fill="#84CC16"/>'
         + f'<text x="198" y="461" font-family="monospace" font-size="10" font-weight="900" fill="{hud_text}">XP</text>'
         + f'<text x="238" y="461" font-family="monospace" font-size="9" font-weight="800" fill="{hud_text}">'
-          'COMMITS→SEEDS/FERTILIZER→GROW→HARVEST→FEED</text>'
+          'SMART ROUTE → PLANT → HARVEST → FEED → BREED</text>'
         + '</g>'
         + '<g class="all-hearts">'
           '<text x="575" y="151" font-size="16" fill="#FB7185">♥</text>'
@@ -671,7 +853,7 @@ def minecraftify(path: Path) -> None:
           '<text x="735" y="289" font-size="18" fill="#F472B6">♥</text>'
         + '</g>'
         + '<text class="farm-complete" x="436" y="438" text-anchor="middle" font-size="14" fill="#A3E635">'
-          'COMMITS GREW THE FARM +XP</text>'
+          'FARM LIFE CYCLE COMPLETE +XP</text>'
         + '</g>'
     )
 
@@ -684,7 +866,7 @@ def minecraftify(path: Path) -> None:
 
     print(
         f"Added Minecraft-style farm world to {path}: "
-        "12 commit->plant->grow->harvest->feed trips, 4 crops, 4 animal pens"
+        "smart routing + crop growth + feeding + gated animal breeding"
     )
 
 
