@@ -328,6 +328,7 @@ def herd_markup(kind: str, x: int, y: int, w: int, h: int) -> str:
     )
 
 
+
 def route_and_times(
     commit_blocks: list[tuple[str, float, float]]
 ) -> tuple[
@@ -377,12 +378,13 @@ def route_and_times(
             route.append((unit, current[0], current[1]))
 
     def harvest_plot(food: str) -> None:
-        nonlocal unit, current
+        nonlocal unit
         record = plot_state[food]
         if record is None:
             return
         animal, color = crop_meta[food]
         plot = HARVEST_SPOTS[food]
+
         arrive(plot, 0.34)
         harvest_u = unit
         arrive(FEED_SPOTS[animal], 0.40)
@@ -396,24 +398,8 @@ def route_and_times(
         plot_state[food] = None
 
     for step in range(len(commit_blocks)):
-        # If every field is occupied, clear a mature field before collecting
-        # another seed. This avoids carrying a seed with nowhere sensible to plant.
-        occupied = [food for food, rec in plot_state.items() if rec is not None]
-        if len(occupied) == len(plot_state):
-            mature = [
-                food for food in occupied
-                if unit >= float(plot_state[food]["mature_u"])
-            ]
-            if not mature:
-                mature = sorted(
-                    occupied,
-                    key=lambda food: float(plot_state[food]["mature_u"])
-                )[:1]
-            food = min(mature, key=lambda f: dist(current, HARVEST_SPOTS[f]))
-            harvest_plot(food)
-
-        # Pick the nearest remaining contribution cell instead of following
-        # a fixed left-to-right order.
+        # Nearest-neighbour contribution pickup keeps Steven from zig-zagging
+        # across the contribution graph without reason.
         cls, bx, by = min(
             remaining,
             key=lambda item: dist(current, (item[1] - 8, item[2] - 26)),
@@ -424,29 +410,55 @@ def route_and_times(
         collect_u = unit
         collect_units.append(collect_u)
 
-        empty = [food for food, rec in plot_state.items() if rec is None]
-        preferred = crop_cycle[step % len(crop_cycle)]
-        if preferred in empty:
-            food = preferred
-        else:
-            food = min(empty, key=lambda f: dist(current, HARVEST_SPOTS[f]))
+        # Farming stays balanced: every four seeds rotate through all four
+        # crops, so every animal pair gets food instead of proximity starving
+        # one species.
+        food = crop_cycle[step % len(crop_cycle)]
+
+        # If this field already has a crop, deal with it before replanting.
+        # Prefer useful work over going back to the barn.
+        if plot_state[food] is not None:
+            record = plot_state[food]
+            if unit < float(record["mature_u"]):
+                mature_other = [
+                    f for f, rec in plot_state.items()
+                    if rec is not None
+                    and f != food
+                    and unit >= float(rec["mature_u"])
+                ]
+                if mature_other:
+                    candidate = min(
+                        mature_other,
+                        key=lambda f: dist(current, HARVEST_SPOTS[f]),
+                    )
+                    harvest_plot(candidate)
+
+            record = plot_state[food]
+            if record is not None and unit < float(record["mature_u"]):
+                # Crop is almost ready; move to the field instead of idling at
+                # home. Travel consumes most of the remaining growth time.
+                arrive(HARVEST_SPOTS[food], 0.30)
+                if unit < float(record["mature_u"]):
+                    unit = float(record["mature_u"])
+                    route.append((unit, current[0], current[1]))
+
+            harvest_plot(food)
 
         plot = HARVEST_SPOTS[food]
         arrive(plot, 0.34)
         plant_u = unit
         plant_units.append(plant_u)
 
-        # Crop ripens while Steven keeps working elsewhere.
         plot_state[food] = {
             "food": food,
             "plant_u": plant_u,
-            "mature_u": plant_u + 3.9,
+            # About one round of other farm work before ripening.
+            "mature_u": plant_u + 2.75,
             "harvest_u": None,
         }
 
-        # Opportunistic task switching:
-        # if a ripe field creates only a small detour toward the next commit,
-        # harvest it now; otherwise continue collecting/planting.
+        # Opportunistic harvest: if another ripe field is nearly on the route
+        # to the next contribution block, handle it now.
         if remaining:
             next_commit = min(
                 remaining,
@@ -455,44 +467,48 @@ def route_and_times(
             next_pos = (next_commit[1] - 8, next_commit[2] - 26)
             mature = [
                 f for f, rec in plot_state.items()
-                if rec is not None and unit >= float(rec["mature_u"])
+                if rec is not None
+                and f != food
+                and unit >= float(rec["mature_u"])
             ]
             if mature:
-                ranked = []
                 direct = dist(current, next_pos)
-                for f in mature:
-                    p = HARVEST_SPOTS[f]
+                ranked = []
+                for candidate in mature:
+                    p = HARVEST_SPOTS[candidate]
                     detour = dist(current, p) + dist(p, next_pos) - direct
-                    ranked.append((detour, f))
+                    ranked.append((detour, candidate))
                 detour, candidate = min(ranked)
-                if detour <= 175:
+                if detour <= 145:
                     harvest_plot(candidate)
 
-    # Finish crops already planted; choose nearest mature task first.
+    # Clean up remaining mature crops by nearest task, no forced barn reset.
     while any(rec is not None for rec in plot_state.values()):
         available = [
             food for food, rec in plot_state.items()
             if rec is not None and unit >= float(rec["mature_u"])
         ]
-        if not available:
-            food = min(
-                (f for f, rec in plot_state.items() if rec is not None),
-                key=lambda f: float(plot_state[f]["mature_u"]),
-            )
-            # No barn waiting: walk to that field and let the remaining growth
-            # happen while Steven is already at the work area.
-            arrive(HARVEST_SPOTS[food], 0.55)
-            if unit < float(plot_state[food]["mature_u"]):
-                unit = float(plot_state[food]["mature_u"])
-                route.append((unit, current[0], current[1]))
-            harvest_plot(food)
-        else:
+
+        if available:
             food = min(available, key=lambda f: dist(current, HARVEST_SPOTS[f]))
             harvest_plot(food)
+            continue
+
+        food = min(
+            (f for f, rec in plot_state.items() if rec is not None),
+            key=lambda f: float(plot_state[f]["mature_u"]),
+        )
+        arrive(HARVEST_SPOTS[food], 0.38)
+        record = plot_state[food]
+        if record is not None and unit < float(record["mature_u"]):
+            unit = float(record["mature_u"])
+            route.append((unit, current[0], current[1]))
+        harvest_plot(food)
 
     arrive(HUB, 0.25)
 
     total = max(unit, 1.0)
+
     def pct(u: float) -> float:
         return 2.0 + (u / total) * 96.0
 
@@ -501,7 +517,9 @@ def route_and_times(
         frames.append(
             f"{fmt(pct(u))}%{{transform:translate({fmt(x)}px,{fmt(y)}px)}}"
         )
-    frames.append(f"100%{{transform:translate({fmt(HUB[0])}px,{fmt(HUB[1])}px)}}")
+    frames.append(
+        f"100%{{transform:translate({fmt(HUB[0])}px,{fmt(HUB[1])}px)}}"
+    )
 
     crop_events = [
         (
