@@ -49,7 +49,7 @@ I build and improve web applications across API development, database-backed wor
 
 **Engineering Tools**
 
-<img src="https://skillicons.dev/icons?i=git,github&theme=dark" alt="Git, GitHub and Postman" />
+<img src="https://skillicons.dev/icons?i=git,github&theme=dark" alt="Git and GitHub" />
 
 ## Featured Projects
 
