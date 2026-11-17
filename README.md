@@ -53,7 +53,7 @@ I build and improve web applications across API development, database-backed wor
 
 ## Featured Projects
 
-### Flight Booking System
+### Flight Booking System — Personal Project
 
 A full-stack flight-booking application built with **ASP.NET Core 8** and **React 19 + Vite**.
 
@@ -65,7 +65,7 @@ A full-stack flight-booking application built with **ASP.NET Core 8** and **Reac
   <img src="https://img.shields.io/badge/View_Project-Flight_Booking_System-2563EB?style=for-the-badge&logo=github&logoColor=white" alt="Flight Booking System repository" />
 </a>
 
-### GymFit
+### GymFit — Personal Project
 
 A full-stack gym-management and commerce platform built with **React 18**, **TypeScript**, **Node.js/Express**, and **SQL Server**.
 
