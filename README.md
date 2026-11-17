@@ -41,7 +41,7 @@ I build and improve web applications across API development, database-backed wor
 
 **Backend & Data**
 
-<img src="https://skillicons.dev/icons?i=dotnet,nodejs,express,postgres,mysql,sqlite&theme=dark" alt="Backend and database technologies" />
+<img src="https://skillicons.dev/icons?i=dotnet,nodejs,express,sqlite&theme=dark" alt="Backend and database technologies" />
 
 <p align="center">
   <code>ASP.NET Core 8</code> • <code>Entity Framework Core</code> • <code>REST APIs</code> • <code>SQL Server</code> • <code>SQLite</code> • <code>JWT</code> • <code>Swagger / OpenAPI</code>
@@ -49,7 +49,7 @@ I build and improve web applications across API development, database-backed wor
 
 **Engineering Tools**
 
-<img src="https://skillicons.dev/icons?i=git,github,postman&theme=dark" alt="Git, GitHub and Postman" />
+<img src="https://skillicons.dev/icons?i=git,github&theme=dark" alt="Git, GitHub and Postman" />
 
 ## Featured Projects
 
