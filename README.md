@@ -1,11 +1,11 @@
 <div align="center">
 
-<img width="100%" src="https://raw.githubusercontent.com/vinh17491/vinh17491/main/assets/minecraft-hero.svg" alt="ZINZIN Software Engineering animated voxel landscape" />
+<img width="100%" src="https://raw.githubusercontent.com/vinh17491/vinh17491/main/assets/minecraft-hero.svg" alt="ZINZIN software engineering profile banner" />
 
 <img
-  src="https://readme-typing-svg.demolab.com?font=JetBrains+Mono&weight=600&size=20&duration=2800&pause=900&color=67E8F9&center=true&vCenter=true&width=760&lines=Building+reliable+backend+systems;Designing+maintainable+APIs;React+%7C+Next.js+%7C+ASP.NET+Core;Building+secure+data-driven+applications;Debugging+systems%2C+not+just+code;Open+to+Software+Developer+Internships"
-  alt="Typing introduction"
-/>
+  src="https://readme-typing-svg.demolab.com?font=JetBrains+Mono&weight=600&size=20&duration=2800&pause=900&color=67E8F9&center=true&vCenter=true&width=760&lines=Backend-focused+Full-stack+Developer;Building+maintainable+APIs;React+%7C+TypeScript+%7C+ASP.NET+Core;Debugging+and+improving+existing+systems;Open+to+Developer+Internships+%26+Scoped+Freelance+Work"
+  alt="Developer focus"
+ />
 
 <br/>
 
@@ -15,85 +15,69 @@
 <a href="https://github.com/vinh17491">
   <img src="https://img.shields.io/badge/GitHub-vinh17491-111827?style=for-the-badge&logo=github&logoColor=white" alt="GitHub" />
 </a>
-<img src="https://img.shields.io/badge/Open_to-Software_Developer_Internships-111827?style=for-the-badge&logo=codeforces&logoColor=67E8F9" alt="Open to internships" />
+<img src="https://img.shields.io/badge/Open_to-Internships_%26_Scoped_Freelance_Work-111827?style=for-the-badge&logo=codeforces&logoColor=67E8F9" alt="Open to internships and scoped freelance work" />
 
 </div>
 
-## 🌙 About Me
+## About Me
 
-Software Engineering 
+Software Engineering student at **HUFLIT**, focused on backend-oriented full-stack development.
 
-I build applications around clear business logic, maintainable APIs, authentication and authorization, reliable data flows, database design, debugging, and practical software testing. I am especially interested in **ASP.NET Core**, **Node.js**, system architecture, and integrating AI into useful software products.
+I build and improve web applications across API development, database-backed workflows, authentication and authorization, and frontend integration. My current projects use **ASP.NET Core** and **Node.js/Express** on the backend, with **React** and **TypeScript** on the frontend.
 
-- Backend-focused with full-stack implementation experience.
-- Comfortable working across API, database, authentication, frontend integration, testing, and debugging.
-- Building practical projects for Software Developer / Software Engineer internship applications.
+- **Focus:** backend APIs, small feature implementation, debugging existing applications, database workflows, and frontend integration.
+- **Approach:** understand the expected result first, keep the scope practical, test changes, and provide a clear handover.
+- **Open to:** Software Developer internships and small, clearly scoped freelance tasks.
 
-## ⚡ Tech Stack
-
-<div align="center">
+## Tech Stack
 
 **Languages**
 
-<img src="https://skillicons.dev/icons?i=cs,ts,js,java,kotlin,swift,dart&theme=dark" alt="Languages" />
+<img src="https://skillicons.dev/icons?i=cs,ts,js&theme=dark" alt="C sharp, TypeScript and JavaScript" />
 
 **Frontend**
 
-<img src="https://skillicons.dev/icons?i=react,nextjs,tailwind,html,css&theme=dark" alt="Frontend technologies" />
+<img src="https://skillicons.dev/icons?i=react,nextjs,vite,tailwind&theme=dark" alt="React, Next.js, Vite and Tailwind CSS" />
 
 **Backend & Data**
 
-<img src="https://skillicons.dev/icons?i=dotnet,nodejs,express,postgres,mysql,sqlite,mongodb,firebase&theme=dark" alt="Backend and databases" />
+<img src="https://skillicons.dev/icons?i=dotnet,nodejs,express,postgres,mysql,sqlite&theme=dark" alt="Backend and database technologies" />
+
+<p align="center">
+  <code>ASP.NET Core 8</code> • <code>Entity Framework Core</code> • <code>REST APIs</code> • <code>SQL Server</code> • <code>SQLite</code> • <code>JWT</code> • <code>Swagger / OpenAPI</code>
+</p>
 
 **Engineering Tools**
 
-<img src="https://skillicons.dev/icons?i=docker,git,github,postman&theme=dark" alt="Engineering tools" />
+<img src="https://skillicons.dev/icons?i=git,github,postman&theme=dark" alt="Git, GitHub and Postman" />
 
-</div>
+## Featured Projects
 
-<p align="center">
-  <code>ASP.NET Core</code> • <code>Entity Framework Core</code> • <code>REST APIs</code> • <code>SQL Server</code> • <code>Oracle</code> • <code>JWT</code> • <code>SignalR</code> • <code>WinUI</code>
-</p>
+### Flight Booking System
 
-## 🚀 Featured Projects
+A full-stack flight-booking application built with **ASP.NET Core 8** and **React 19 + Vite**.
 
-### ✈️ Flight Booking System
+- Backend API with Entity Framework Core, SQLite persistence, JWT bearer authentication, and Swagger/OpenAPI.
+- React frontend using Vite, Axios, and React Router.
+- Booking, checkout, and payment-related service workflows.
 
-Full-stack airline booking platform combining a **React + Vite** frontend with an **ASP.NET Core 8** API, **Entity Framework Core**, **SQLite**, and **JWT authentication**.
-
-- Flight search, seat selection, booking and payment workflows.
-- REST API with Swagger/OpenAPI support and authenticated endpoints.
-- Travel-information UI, reusable components, responsive navigation, and asset validation.
-
-<a href="https://github.com/Phucht59/web_maybay">
-  <img src="https://img.shields.io/badge/View_Project-Flight_Booking_System-2563EB?style=for-the-badge&logo=github&logoColor=white" alt="Flight Booking System" />
+<a href="https://github.com/vinh17491/web_maybay">
+  <img src="https://img.shields.io/badge/View_Project-Flight_Booking_System-2563EB?style=for-the-badge&logo=github&logoColor=white" alt="Flight Booking System repository" />
 </a>
 
-### 🏋️ GymFit
+### GymFit
 
-Full-stack gym management and commerce platform built with **React 18**, **TypeScript**, **Express**, and **SQL Server**.
+A full-stack gym-management and commerce platform built with **React 18**, **TypeScript**, **Node.js/Express**, and **SQL Server**.
 
-- Role-based member, coach, and administrator workflows.
-- JWT authentication, authorization, catalog, inventory, cart, checkout, orders, payments, and audit histories.
-- Protected APIs, database migrations, responsive dashboards, and structured technical documentation.
+- Role-based Member, Coach, and Admin workflows.
+- Product catalog, cart, checkout, orders, payment records, and appointment booking.
+- Documented API authorization, database migrations, and guarded acceptance workflows.
 
-<a href="https://github.com/vinh17491/gym">
-  <img src="https://img.shields.io/badge/View_Project-GymFit-7C3AED?style=for-the-badge&logo=github&logoColor=white" alt="GymFit" />
+<a href="https://github.com/vinh17491/GymFit">
+  <img src="https://img.shields.io/badge/View_Project-GymFit-7C3AED?style=for-the-badge&logo=github&logoColor=white" alt="GymFit repository" />
 </a>
 
-## 🌾 Steven's Minecraft Farm Life
-
-<div align="center">
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/vinh17491/vinh17491/output/github-contribution-mine-dark.svg" />
-  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/vinh17491/vinh17491/output/github-contribution-mine.svg" />
-  <img alt="Steven running a voxel farm with a barn, crop fields, pigs, cows, sheep and chickens" src="https://raw.githubusercontent.com/vinh17491/vinh17491/output/github-contribution-mine.svg" />
-</picture>
-
-</div>
-
-## 📊 GitHub Activity
+## GitHub Activity
 
 <div align="center">
 
@@ -104,8 +88,8 @@ Full-stack gym management and commerce platform built with **React 18**, **TypeS
 
 <div align="center">
 
-<img width="100%" src="https://capsule-render.vercel.app/api?type=waving&height=130&section=footer&color=0:020617,45:312e81,100:701a75&animation=twinkling" alt="Animated footer" />
+<img width="100%" src="https://capsule-render.vercel.app/api?type=waving&height=130&section=footer&color=0:020617,45:312e81,100:701a75&animation=twinkling" alt="Profile footer" />
 
-<sub><strong>CODE • DEBUG • BUILD • IMPROVE</strong></sub>
+<sub><strong>UNDERSTAND • BUILD • DEBUG • IMPROVE</strong></sub>
 
 </div>
